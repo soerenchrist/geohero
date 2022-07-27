@@ -21,26 +21,36 @@ const documentClient = DynamoDBDocument.from(client);
 
 countries.forEach((item, index) => (item.index = index));
 
-for (let i = 0; i < countries.length; i++) {
-  const country = countries[i];
-  const item = {
-    ...country,
-    pk: "COUNTRY",
-    sk: country.iso,
-    gsi1pk: "COUNTRY",
-    gsi1sk: country.index + "",
-  };
+async function insertItems(countries) {
 
-  documentClient
-    .put({
-      Item: item,
-      TableName: tableName,
+  var size = 10; var chunks = [];
+  for (var i = 0; i < countries.length; i += size) {
+    chunks.push(countries.slice(i, i + size));
+  }
+  for (let c = 0; c < chunks.length; c++) {
+    const chunk = chunks[c];
+    const transactionItems = []
+    for (let i = 0; i < chunk.length; i++) {
+      const country = chunk[i];
+      const item = {
+        ...country,
+        pk: "COUNTRY",
+        sk: country.name,
+        gsi1pk: "COUNTRY",
+        gsi1sk: country.index + "",
+      };
+      transactionItems.push({
+        Put: {
+          Item: item,
+          TableName: tableName,
+        }
+      });
+    }
+    await documentClient.transactWrite({
+      TransactItems: transactionItems
     })
-    .then((result) => {
-      console.log(`${country.iso} succeeded`);
-    })
-    .catch((err) => {
-      console.log(err);
-      console.log(`${country.iso} failed`);
-    });
+    console.log("Inserted chunk")
+  }
 }
+
+insertItems(countries).then(() => console.log("finished"));
