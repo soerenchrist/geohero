@@ -5,7 +5,11 @@ import Container from "../../components/common/container";
 import CountrySearchField from "../../components/game/countrySearchField";
 import { Country } from "../../server/types/country";
 import { type GeoJson } from "../../server/types/geojson";
-import { calculateDistance, Direction, directionTo } from "../../utils/coordinateUtil";
+import {
+  calculateDistance,
+  Direction,
+  directionTo,
+} from "../../utils/coordinateUtil";
 import { generateDistinctNumbers } from "../../utils/randomUtil";
 import { trpc } from "../../utils/trpc";
 
@@ -66,7 +70,8 @@ const GamePage: NextPage<{
   countryIndices: number[];
   rounds: number;
   showDirection: boolean;
-}> = ({ countryIndices, rounds, showDirection }) => {
+  showBorders: boolean;
+}> = ({ countryIndices, rounds, showDirection, showBorders }) => {
   const [currentGuess, setCurrentGuess] = useState<Country>();
   const [currentRound, setCurrentRound] = useState(0);
   const [distance, setDistance] = useState<number>();
@@ -108,6 +113,7 @@ const GamePage: NextPage<{
             geojson={shapeData}
             distance={distance}
             direction={direction}
+            showBorders={showBorders}
           />
         </div>
         <CountrySearchField onCountryInput={setCurrentGuess} />
@@ -130,6 +136,12 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     const value = showDirString === "true";
     showDirection = value;
   }
+  let showBorders = false;
+  const showBordersString = ctx.query.showBorders;
+  if (showBordersString && typeof showBordersString === "string") {
+    const value = showBordersString === "true";
+    showBorders = value;
+  }
 
   const countryIndices = generateDistinctNumbers(rounds, 0, 198);
   return {
@@ -137,6 +149,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
       countryIndices,
       rounds,
       showDirection,
+      showBorders,
     },
   };
 };

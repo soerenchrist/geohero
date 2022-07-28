@@ -10,7 +10,7 @@ const CountrySearchField: React.FC<{
     [
       "game.check-country-by-name",
       {
-        name,
+        name: name.toLowerCase(),
       },
     ],
     {

@@ -9,7 +9,11 @@ import {
 import { type GeoJson } from "../../server/types/geojson";
 import { getBlendedColor } from "../../utils/colorUtil";
 import { Direction, distanceToPercentage } from "../../utils/coordinateUtil";
-import { attribution, layerUrl } from "../../utils/mapConstants";
+import {
+  attribution,
+  borderLayerUrl,
+  layerUrl,
+} from "../../utils/mapConstants";
 import EastIcon from "../icons/east";
 import NorthIcon from "../icons/north";
 import UpIcon from "../icons/north";
@@ -67,7 +71,8 @@ const GameMap: React.FC<{
   center: Coordinate;
   distance?: number;
   direction?: Direction;
-}> = ({ geojson, center, distance, direction }) => {
+  showBorders: boolean;
+}> = ({ geojson, center, distance, direction, showBorders }) => {
   const [color, setColor] = useState("#0000ff");
   const [percentage, setPercentage] = useState(0);
 
@@ -83,7 +88,7 @@ const GameMap: React.FC<{
 
   return (
     <MapContainer
-      className="h-96 z-0"
+      className="h-full z-0"
       center={{ lat: 49, lng: 10 }}
       zoom={5}
       scrollWheelZoom={false}
@@ -91,6 +96,13 @@ const GameMap: React.FC<{
       doubleClickZoom={false}
     >
       <TileLayer attribution={attribution} url={layerUrl} />
+      {showBorders && (
+        <TileLayer
+          attribution={attribution}
+          url={borderLayerUrl}
+          subdomains={["a", "b", "c", "d"]}
+        />
+      )}
       {geojson && (
         <GeoJSON
           style={{ color }}
