@@ -5,6 +5,7 @@ import Container from "../../components/common/container";
 import CountrySearchField from "../../components/game/countrySearchField";
 import { Country } from "../../server/types/country";
 import { type GeoJson } from "../../server/types/geojson";
+import { calculateDistance } from "../../utils/coordinateUtil";
 import { generateDistinctNumbers } from "../../utils/randomUtil";
 import { trpc } from "../../utils/trpc";
 
@@ -12,16 +13,24 @@ const Map = dynamic(() => import("../../components/maps/gameMap"), {
   ssr: false,
 });
 
-const useCountryData = (countryIndex?: number) => {
+const useCountryData = (
+  countryIndex?: number,
+  options?: { loadShape: boolean }
+) => {
   const [shapeData, setShapeData] = useState<GeoJson>();
-  const { data: country, isLoading: dataLoading } = trpc.useQuery([
-    "game.get-country-by-index",
+  const { data: country, isLoading: dataLoading } = trpc.useQuery(
+    [
+      "game.get-country-by-index",
+      {
+        index: countryIndex ?? 0,
+      },
+    ],
     {
-      index: countryIndex ?? 0,
-    },
-  ], {
-    enabled: countryIndex != null
-  });
+      enabled: countryIndex != null,
+      refetchOnWindowFocus: false,
+    }
+  );
+  const loadShape = options?.loadShape ?? true;
   const { data: shapeUrl, isLoading: shapeLoading } = trpc.useQuery(
     [
       "game.get-country-shape-url",
@@ -30,7 +39,8 @@ const useCountryData = (countryIndex?: number) => {
       },
     ],
     {
-      enabled: country != null,
+      enabled: country != null && loadShape,
+      refetchOnWindowFocus: false,
     }
   );
 
@@ -58,12 +68,31 @@ const GamePage: NextPage<{ countryIndices: number[]; rounds: number }> = ({
 }) => {
   const [currentGuess, setCurrentGuess] = useState<Country>();
   const [currentRound, setCurrentRound] = useState(0);
+  const [distance, setDistance] = useState<number>();
   const currentCountryIndex = useMemo(
     () => countryIndices[currentRound]!,
     [countryIndices, currentRound]
   );
 
   const { country, shapeData, isLoading } = useCountryData(currentGuess?.index);
+  const { country: searchedCountry } = useCountryData(currentCountryIndex, {
+    loadShape: false,
+  });
+
+  console.log(searchedCountry);
+
+  useEffect(() => {
+    if (currentGuess && searchedCountry) {
+      const dist = calculateDistance(
+        currentGuess.latitude,
+        currentGuess.longitude,
+        searchedCountry.latitude,
+        searchedCountry.longitude
+      );
+      setDistance(dist);
+    }
+  }, [currentGuess, searchedCountry]);
+
   return (
     <Container>
       <div className="flex flex-col w-screen h-screen items-center gap-8">
@@ -71,6 +100,7 @@ const GamePage: NextPage<{ countryIndices: number[]; rounds: number }> = ({
           <Map
             center={country ?? { latitude: 49, longitude: 10 }}
             geojson={shapeData}
+            distance={distance}
           />
         </div>
         <CountrySearchField onCountryInput={setCurrentGuess} />
