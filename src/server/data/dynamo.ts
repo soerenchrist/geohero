@@ -3,10 +3,10 @@ import { DynamoDBDocument } from "@aws-sdk/lib-dynamodb";
 import { CountrySchema } from "../types/country";
 
 const client = new AWS.DynamoDB({
-  region: process.env.DYNAMO_REGION,
+  region: process.env.AWS_GEOHERO_REGION,
   credentials: {
-    accessKeyId: process.env.DYNAMO_ACCESS_ID,
-    secretAccessKey: process.env.DYNAMO_ACCESS_SECRET,
+    accessKeyId: process.env.GEOHERO_ACCESS_ID,
+    secretAccessKey: process.env.GEOHERO_ACCESS_SECRET,
   },
 });
 const documentClient = DynamoDBDocument.from(client);
