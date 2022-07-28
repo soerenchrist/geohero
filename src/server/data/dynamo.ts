@@ -26,3 +26,19 @@ export const getCountryByIndex = async (index: number) => {
   const country = CountrySchema.parse(result.Items[0]);
   return country;
 };
+
+export const getCountryByName = async (name: string) => {
+  const result = await documentClient.get({
+    TableName: process.env.DYNAMO_TABLE_NAME,
+    Key: {
+      pk: "COUNTRY",
+      sk: name,
+    },
+  });
+
+  if (result.Item) {
+    return CountrySchema.parse(result.Item);
+  }
+
+  return null;
+};

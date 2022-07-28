@@ -35,7 +35,7 @@ async function insertItems(countries) {
       const item = {
         ...country,
         pk: "COUNTRY",
-        sk: country.name,
+        sk: country.name.toLowerCase(),
         gsi1pk: "COUNTRY",
         gsi1sk: country.index + "",
       };

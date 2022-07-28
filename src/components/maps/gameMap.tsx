@@ -30,7 +30,7 @@ const GameMap: React.FC<{ geojson?: GeoJson; center: Coordinate }> = ({
       scrollWheelZoom={true}
     >
       <TileLayer attribution={attribution} url={layerUrl} />
-      {geojson && <GeoJSON data={geojson} />}
+      {geojson && <GeoJSON key={geojson.properties.ISO_A2} data={geojson} />}
       <PositionHandler center={center} />
     </MapContainer>
   );
