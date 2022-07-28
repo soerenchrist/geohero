@@ -2,6 +2,7 @@ import { GetServerSideProps, NextPage } from "next";
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
 import Container from "../../components/common/container";
+import Meta from "../../components/common/meta";
 import CorrectCountriesDisplay from "../../components/game/correctCountriesDisplay";
 import CountrySearchField from "../../components/game/countrySearchField";
 import { Country } from "../../server/types/country";
@@ -121,28 +122,34 @@ const GamePage: NextPage<{
   }, [currentRound, rounds]);
 
   return (
-    <Container>
-      <div className="flex flex-col w-screen min-h-screen items-center gap-8">
-        <div className="w-screen abolute">
-          <Map
-            center={currentGuess ?? { latitude: 49, longitude: 10 }}
-            geojson={shapeData}
-            distance={distance}
-            direction={direction}
-            showBorders={showBorders}
-          />
-          <div className="absolute top-0 left-0 w-screen lg:h-1/2 h-72 pointer-events-none flex justify-center items-center flex-col text-center">
-            {showCorrectMessage && (
-              <h1 className="text-5xl animate-ping duration-1000 font-extrabold text-purple-700">
-                Correct!
-              </h1>
-            )}
+    <>
+      <Meta></Meta>
+      <Container>
+        <div className="flex flex-col w-screen min-h-screen items-center gap-8">
+          <div className="lg:h-96 h-72 w-screen abolute">
+            <Map
+              center={currentGuess ?? { latitude: 49, longitude: 10 }}
+              geojson={shapeData}
+              distance={distance}
+              direction={direction}
+              showBorders={showBorders}
+            />
+            <div className="absolute top-0 right-0 px-1 py-3 text-lg font-bold">
+              <span className="bg-white p-2 rounded-lg">{currentRound + 1}/{rounds}</span>
+            </div>
+            <div className="absolute top-0 left-0 w-screen lg:h-96 h-72 pointer-events-none flex justify-center items-center flex-col text-center">
+              {showCorrectMessage && (
+                <h1 className="text-5xl animate-ping duration-1000 font-extrabold text-purple-700">
+                  Correct!
+                </h1>
+              )}
+            </div>
           </div>
+          <CountrySearchField onCountryInput={setCurrentGuess} />
+          <CorrectCountriesDisplay countries={correctGuesses} rounds={rounds} />
         </div>
-        <CountrySearchField onCountryInput={setCurrentGuess} />
-        <CorrectCountriesDisplay countries={correctGuesses} rounds={rounds} />
-      </div>
-    </Container>
+      </Container>
+    </>
   );
 };
 
