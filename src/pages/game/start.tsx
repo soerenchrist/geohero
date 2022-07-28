@@ -70,6 +70,7 @@ const StartPage: NextPage = () => {
       <Meta />
       <Container>
         <div className="h-screen w-full flex justify-center flex-col items-center gap-6">
+          <h1 className="text-5xl font-extrabold text-white mb-8">Set game settings</h1>
           <Spinner
             label="Rounds"
             value={settings.rounds}
@@ -103,7 +104,7 @@ const StartPage: NextPage = () => {
           <button
             disabled={isLoading}
             onClick={handleStart}
-            className="w-48 h-16 text-lg font-medium rounded-full hover:scale-105 bg-white"
+            className="w-48 h-16 text-lg font-medium rounded-full hover:scale-105 bg-gradient-to-br from-pink-300 to-rose-500"
           >
             Start
           </button>
