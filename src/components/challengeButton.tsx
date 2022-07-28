@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { trpc } from "../utils/trpc";
+import { Button } from "./common/button";
 import CopyIcon from "./icons/copy";
 
 const ChallengeButton: React.FC<{
@@ -16,7 +17,7 @@ const ChallengeButton: React.FC<{
 
   const handleCopy = async () => {
     if (data) await navigator.clipboard.writeText(data.token);
-  }
+  };
 
   return (
     <>
@@ -27,19 +28,22 @@ const ChallengeButton: React.FC<{
             disabled
             value={data.token}
           ></input>
-          <button onClick={handleCopy} className="w-12 h-12 rounded-r-full  bg-gradient-to-br from-pink-300 to-rose-500">
+          <button
+            onClick={handleCopy}
+            className="w-12 h-12 rounded-r-full  bg-gradient-to-br from-pink-300 to-rose-500"
+          >
             <CopyIcon className="w-6 h-6 m-auto" />
           </button>
         </div>
       )}
       {!data && (
-        <button
+        <Button
+          variant="secondary"
           onClick={() => setEnabled(true)}
           disabled={isLoading}
-          className="w-48 h-16 text-lg font-medium rounded-full hover:scale-105 bg-gradient-to-br from-sky-300 text-black to-pink-500"
         >
           Create challenge
-        </button>
+        </Button>
       )}
     </>
   );

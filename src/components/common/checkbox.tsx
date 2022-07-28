@@ -14,7 +14,7 @@ const Checkbox: React.FC<{
     <div className="flex gap-2 items-center">
       <input
         type="checkbox"
-        className="bg-white w-6 h-6 rounded-full border-purple-300 text-purple-500 focus:ring-0"
+        className="bg-white w-6 h-6 rounded-full border-purple-300 text-accent1 focus:ring-0"
         checked={checked}
         onChange={handleChange}
       ></input>

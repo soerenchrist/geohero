@@ -36,7 +36,7 @@ const Cell: React.FC<{ country?: Country }> = ({ country }) => {
   );
 
   return (
-    <div className="w-full bg-highlight-card h-32 lg:h-52 rounded-lg flex flex-col gap-3 justify-center text-xl lg:text-3xl font-bold text-white items-center text-center">
+    <div className="w-full h-32 lg:h-52 rounded-lg flex flex-col gap-3 justify-center text-xl lg:text-3xl font-bold items-center text-center bg-gradient-to-br from-accent1 to-accent2">
       {!country && <h3>?</h3>}
       {image && <img src={image} className="max-h-12 max-w-1/2" alt={country!.name}></img>}
       {country && <h3>{country.name}</h3>}

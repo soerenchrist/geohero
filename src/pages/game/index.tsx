@@ -3,6 +3,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Button } from "../../components/common/button";
 import Container from "../../components/common/container";
 import Meta from "../../components/common/meta";
 import CorrectCountriesDisplay from "../../components/game/correctCountriesDisplay";
@@ -173,21 +174,20 @@ const GamePage: NextPage<{
       <Container>
         {gameWon && (
           <div className="flex flex-col w-screen h-screen justify-center items-center">
-            <h1 className="text-3xl lg:text-8xl animate-pulse duration-1000 font-extrabold bg-clip-text text-transparent bg-gradient-to-br from-sky-200 to-sky-500">
+            <h1 className="text-3xl lg:text-8xl animate-pulse duration-1000 font-extrabold bg-clip-text text-transparent bg-gradient-to-br from-accent1 to-accent2">
               You did it!
             </h1>
-            <h4 className="text-xl font-bold text-sky-300">
+            <h4 className="text-xl font-bold text-accent1">
               Congrats, it took you {elapsedSeconds} seconds!
             </h4>
             <div className="flex gap-2 mt-20">
-              <button
-                className="w-48 h-16 text-lg font-medium rounded-full hover:scale-105 bg-white"
+              <Button
                 onClick={() => router.reload()}
               >
                 Play again
-              </button>
+              </Button>
               <Link href="/game/start">
-                <button className="w-16 h-16 rounded-full hover:scale-105 bg-white text-center">
+                <button className="w-16 h-16 rounded-full hover:scale-105 bg-brand border border-white border-solid text-white text-center">
                   <SettingsIcon className="w-8 h-8 m-auto" />
                 </button>
               </Link>
@@ -213,7 +213,7 @@ const GamePage: NextPage<{
               </div>
               <div className="absolute top-0 left-0 w-screen lg:h-96 h-72 pointer-events-none flex justify-center items-center flex-col text-center">
                 {showCorrectMessage && (
-                  <h1 className="text-5xl animate-ping duration-1000 font-extrabold text-purple-700">
+                  <h1 className="text-5xl animate-ping duration-1000 font-extrabold text-brand">
                     Correct!
                   </h1>
                 )}

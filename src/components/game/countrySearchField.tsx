@@ -26,7 +26,7 @@ const CountrySearchField: React.FC<{
 
   return (
     <input
-      className="w-64 px-4 font-medium placeholder:text-gray-400 text-lg text-center h-12 rounded-full"
+      className="w-64 px-4 font-medium placeholder:text-gray-400 text-lg text-center h-16 rounded-full"
       value={name}
       placeholder="Enter country name"
       onChange={(e) => setName(e.target.value)}

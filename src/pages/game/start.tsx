@@ -4,10 +4,12 @@ import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import ChallengeButton from "../../components/challengeButton";
+import { Button } from "../../components/common/button";
 import Checkbox from "../../components/common/checkbox";
 import Container from "../../components/common/container";
 import Meta from "../../components/common/meta";
 import Spinner from "../../components/common/spinner";
+import Title from "../../components/common/title";
 import { trpc } from "../../utils/trpc";
 
 const settingsSchema = z.object({
@@ -48,7 +50,7 @@ const useLocalSettings = (props: ReturnType<typeof useGameSettings>) => {
     localStorage.setItem("game-settings", json);
   };
 
-  return { saveSettings }
+  return { saveSettings };
 };
 
 const useGameSettings = () => {
@@ -114,9 +116,7 @@ const StartPage: NextPage = () => {
       <Meta />
       <Container>
         <div className="h-screen w-full flex justify-center flex-col items-center gap-6">
-          <h1 className="text-5xl font-extrabold text-white mb-8">
-            Set game settings
-          </h1>
+          <Title />
           <Spinner
             label="Rounds"
             value={settings.rounds}
@@ -147,13 +147,12 @@ const StartPage: NextPage = () => {
           >
             Reset values
           </button>
-          <button
+          <Button
             disabled={isLoading}
             onClick={handleStart}
-            className="w-48 h-16 text-lg font-medium rounded-full hover:scale-105 bg-gradient-to-br from-pink-300 to-rose-500"
           >
             Start
-          </button>
+          </Button>
         </div>
       </Container>
     </>
