@@ -14,6 +14,10 @@ const ChallengeButton: React.FC<{
     },
   });
 
+  const handleCopy = async () => {
+    if (data) await navigator.clipboard.writeText(data.token);
+  }
+
   return (
     <>
       {data && (
@@ -23,7 +27,7 @@ const ChallengeButton: React.FC<{
             disabled
             value={data.token}
           ></input>
-          <button className="w-12 h-12 rounded-r-full bg-sky-400">
+          <button onClick={handleCopy} className="w-12 h-12 rounded-r-full bg-sky-400">
             <CopyIcon className="w-6 h-6 m-auto" />
           </button>
         </div>
