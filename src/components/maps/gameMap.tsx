@@ -16,7 +16,6 @@ import {
 } from "../../utils/mapConstants";
 import EastIcon from "../icons/east";
 import NorthIcon from "../icons/north";
-import UpIcon from "../icons/north";
 import NorthEastIcon from "../icons/northEast";
 import NorthWestIcon from "../icons/northWest";
 import SouthIcon from "../icons/south";
@@ -88,7 +87,7 @@ const GameMap: React.FC<{
 
   return (
     <MapContainer
-      className="h-96 lg:h-full z-0"
+      className="h-72 lg:h-full z-0"
       center={{ lat: 49, lng: 10 }}
       zoom={5}
       scrollWheelZoom={false}

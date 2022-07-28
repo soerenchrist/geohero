@@ -123,7 +123,7 @@ const GamePage: NextPage<{
   return (
     <Container>
       <div className="flex flex-col w-screen min-h-screen items-center gap-8">
-        <div className="h-96 lg:h-1/2 w-screen abolute">
+        <div className="w-screen abolute">
           <Map
             center={currentGuess ?? { latitude: 49, longitude: 10 }}
             geojson={shapeData}
@@ -131,7 +131,7 @@ const GamePage: NextPage<{
             direction={direction}
             showBorders={showBorders}
           />
-          <div className="absolute top-0 left-0 w-screen lg:h-1/2 h-96 flex justify-center items-center flex-col text-center">
+          <div className="absolute top-0 left-0 w-screen lg:h-1/2 h-72 pointer-events-none flex justify-center items-center flex-col text-center">
             {showCorrectMessage && (
               <h1 className="text-5xl animate-ping duration-1000 font-extrabold text-purple-700">
                 Correct!
