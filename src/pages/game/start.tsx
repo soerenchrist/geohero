@@ -1,13 +1,55 @@
 import { NextPage } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { z } from "zod";
 import ChallengeButton from "../../components/challengeButton";
 import Checkbox from "../../components/common/checkbox";
 import Container from "../../components/common/container";
 import Meta from "../../components/common/meta";
 import Spinner from "../../components/common/spinner";
 import { trpc } from "../../utils/trpc";
+
+const settingsSchema = z.object({
+  rounds: z.number().min(3).max(10),
+  showCountryBorders: z.boolean(),
+  showDirections: z.boolean(),
+  showPercentage: z.boolean(),
+});
+
+const useLocalSettings = (props: ReturnType<typeof useGameSettings>) => {
+  useEffect(() => {
+    const settingsJson = window.localStorage.getItem("game-settings");
+    if (!settingsJson) return;
+    try {
+      const json = JSON.parse(settingsJson);
+      const result = settingsSchema.safeParse(json);
+      if (result.success) {
+        const {
+          setShowCountryBorders,
+          setShowDirections,
+          setShowPercentage,
+          setRounds,
+        } = props;
+        setShowCountryBorders(result.data.showCountryBorders);
+        setShowDirections(result.data.showDirections);
+        setShowPercentage(result.data.showPercentage);
+        setRounds(result.data.rounds);
+      }
+    } catch (e) {
+      console.log(e);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const saveSettings = () => {
+    const item = settingsSchema.parse(props);
+    const json = JSON.stringify(item);
+    localStorage.setItem("game-settings", json);
+  };
+
+  return { saveSettings }
+};
 
 const useGameSettings = () => {
   const [rounds, setRounds] = useState(5);
@@ -53,8 +95,10 @@ const StartPage: NextPage = () => {
       },
     }
   );
+  const { saveSettings } = useLocalSettings(settings);
   const router = useRouter();
   const handleStart = () => {
+    saveSettings();
     if (!token) {
       router.push(settings.url);
     } else {
@@ -70,7 +114,9 @@ const StartPage: NextPage = () => {
       <Meta />
       <Container>
         <div className="h-screen w-full flex justify-center flex-col items-center gap-6">
-          <h1 className="text-5xl font-extrabold text-white mb-8">Set game settings</h1>
+          <h1 className="text-5xl font-extrabold text-white mb-8">
+            Set game settings
+          </h1>
           <Spinner
             label="Rounds"
             value={settings.rounds}

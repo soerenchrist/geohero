@@ -18,7 +18,6 @@ export const gameRouter = createRouter()
       index: z.number().min(0).max(198),
     }),
     async resolve({ input }) {
-      console.log("fetched: " + input.index);
       const country = await getCountryByIndex(input.index);
       return country;
     },
