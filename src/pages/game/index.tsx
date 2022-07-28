@@ -5,7 +5,7 @@ import Container from "../../components/common/container";
 import CountrySearchField from "../../components/game/countrySearchField";
 import { Country } from "../../server/types/country";
 import { type GeoJson } from "../../server/types/geojson";
-import { calculateDistance } from "../../utils/coordinateUtil";
+import { calculateDistance, Direction, directionTo } from "../../utils/coordinateUtil";
 import { generateDistinctNumbers } from "../../utils/randomUtil";
 import { trpc } from "../../utils/trpc";
 
@@ -62,13 +62,15 @@ const useCountryData = (
   return { shapeData, country, isLoading };
 };
 
-const GamePage: NextPage<{ countryIndices: number[]; rounds: number }> = ({
-  countryIndices,
-  rounds,
-}) => {
+const GamePage: NextPage<{
+  countryIndices: number[];
+  rounds: number;
+  showDirection: boolean;
+}> = ({ countryIndices, rounds, showDirection }) => {
   const [currentGuess, setCurrentGuess] = useState<Country>();
   const [currentRound, setCurrentRound] = useState(0);
   const [distance, setDistance] = useState<number>();
+  const [direction, setDirection] = useState<Direction>();
   const currentCountryIndex = useMemo(
     () => countryIndices[currentRound]!,
     [countryIndices, currentRound]
@@ -90,8 +92,12 @@ const GamePage: NextPage<{ countryIndices: number[]; rounds: number }> = ({
         searchedCountry.longitude
       );
       setDistance(dist);
+      if (showDirection) {
+        const dir = directionTo(currentGuess, searchedCountry);
+        setDirection(dir);
+      }
     }
-  }, [currentGuess, searchedCountry]);
+  }, [currentGuess, searchedCountry, showDirection]);
 
   return (
     <Container>
@@ -101,6 +107,7 @@ const GamePage: NextPage<{ countryIndices: number[]; rounds: number }> = ({
             center={country ?? { latitude: 49, longitude: 10 }}
             geojson={shapeData}
             distance={distance}
+            direction={direction}
           />
         </div>
         <CountrySearchField onCountryInput={setCurrentGuess} />
@@ -117,11 +124,19 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     if (!isNaN(value)) rounds = value;
   }
 
+  let showDirection = false;
+  const showDirString = ctx.query.showDirs;
+  if (showDirString && typeof showDirString === "string") {
+    const value = showDirString === "true";
+    showDirection = value;
+  }
+
   const countryIndices = generateDistinctNumbers(rounds, 0, 198);
   return {
     props: {
       countryIndices,
       rounds,
+      showDirection,
     },
   };
 };

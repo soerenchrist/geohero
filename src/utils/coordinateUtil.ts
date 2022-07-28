@@ -25,12 +25,55 @@ const toRad = (value: number) => {
 export const distanceToPercentage = (distance: number) => {
   const minValue = 100000;
   const maxValue = 8000000;
-  
+
   // calculate percentage -> the nearer the better
-  var percentage = Math.round(((maxValue - distance) / (maxValue - minValue)) * 100);
-  if (percentage < 0)
-      return 0;
-  if (percentage > 100)
-      return 100;
+  var percentage = Math.round(
+    ((maxValue - distance) / (maxValue - minValue)) * 100
+  );
+  if (percentage < 0) return 0;
+  if (percentage > 100) return 100;
   return percentage;
-}
+};
+
+type Coordinate = {
+  latitude: number;
+  longitude: number;
+};
+
+export type Direction =
+  | "north"
+  | "north-east"
+  | "east"
+  | "south-east"
+  | "south"
+  | "south-west"
+  | "west"
+  | "north-west"
+  | "north";
+
+export const directionTo = (startPoint: Coordinate, endPoint: Coordinate) => {
+  const radians = Math.atan2(
+    endPoint.longitude - startPoint.longitude,
+    endPoint.latitude - startPoint.latitude
+  );
+
+  var compassReading = radians * (180 / Math.PI);
+
+  var coordNames: Direction[] = [
+    "north",
+    "north-east",
+    "east",
+    "south-east",
+    "south",
+    "south-west",
+    "west",
+    "north-west",
+    "north",
+  ];
+  var coordIndex = Math.round(compassReading / 45);
+  if (coordIndex < 0) {
+    coordIndex += 8;
+  }
+
+  return coordNames[coordIndex]!;
+};

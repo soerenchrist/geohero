@@ -15,8 +15,8 @@ const toHex = (color: readonly [number, number, number]) => {
 
 const getBlendedColorInternal = (percentage: number) => {
   if (percentage < 50)
-    return interpolate([255, 0, 0], [0, 255, 255], percentage / 50);
-  return interpolate([0, 255, 255], [0, 255, 0], (percentage - 50) / 50);
+    return interpolate([255, 0, 0], [255, 255, 0], percentage / 50);
+  return interpolate([255, 255, 0], [0, 255, 0], (percentage - 50) / 50);
 };
 
 const interpolate = (
