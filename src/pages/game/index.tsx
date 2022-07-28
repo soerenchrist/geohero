@@ -2,6 +2,7 @@ import { GetServerSideProps, NextPage } from "next";
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
 import Container from "../../components/common/container";
+import CorrectCountriesDisplay from "../../components/game/correctCountriesDisplay";
 import CountrySearchField from "../../components/game/countrySearchField";
 import { Country } from "../../server/types/country";
 import { type GeoJson } from "../../server/types/geojson";
@@ -31,7 +32,7 @@ const useCountryShape = (iso?: string) => {
       refetchOnWindowFocus: false,
     }
   );
-  
+
   useEffect(() => {
     const fetchGeoJson = async (url: string) => {
       const response = await fetch(url);
@@ -41,12 +42,10 @@ const useCountryShape = (iso?: string) => {
       fetchGeoJson(shapeUrl);
     }
   }, [shapeUrl]);
-  return { shapeData, shapeLoading }
-}
+  return { shapeData, shapeLoading };
+};
 
-const useCountryData = (
-  countryIndex?: number,
-) => {
+const useCountryData = (countryIndex?: number) => {
   return trpc.useQuery(
     [
       "game.get-country-by-index",
@@ -119,12 +118,12 @@ const GamePage: NextPage<{
       setDirection(undefined);
       setDistance(undefined);
     }
-  }, [currentRound, rounds])
+  }, [currentRound, rounds]);
 
   return (
     <Container>
-      <div className="flex flex-col w-screen h-screen items-center gap-8">
-        <div className="h-1/2 w-full abolute">
+      <div className="flex flex-col w-screen min-h-screen items-center gap-8">
+        <div className="h-96 lg:h-1/2 w-screen abolute">
           <Map
             center={currentGuess ?? { latitude: 49, longitude: 10 }}
             geojson={shapeData}
@@ -132,7 +131,7 @@ const GamePage: NextPage<{
             direction={direction}
             showBorders={showBorders}
           />
-          <div className="absolute top-0 left-0 w-full h-1/2 flex justify-center items-center flex-col text-center">
+          <div className="absolute top-0 left-0 w-screen lg:h-1/2 h-96 flex justify-center items-center flex-col text-center">
             {showCorrectMessage && (
               <h1 className="text-5xl animate-ping duration-1000 font-extrabold text-purple-700">
                 Correct!
@@ -141,12 +140,7 @@ const GamePage: NextPage<{
           </div>
         </div>
         <CountrySearchField onCountryInput={setCurrentGuess} />
-        {currentRound}
-        <div className="flex gap-4">
-          {correctGuesses.map((country) => (
-            <div key={country.index}>{country.name}</div>
-          ))}
-        </div>
+        <CorrectCountriesDisplay countries={correctGuesses} rounds={rounds} />
       </div>
     </Container>
   );

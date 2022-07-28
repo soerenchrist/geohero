@@ -88,7 +88,7 @@ const GameMap: React.FC<{
 
   return (
     <MapContainer
-      className="h-full z-0"
+      className="h-96 lg:h-full z-0"
       center={{ lat: 49, lng: 10 }}
       zoom={5}
       scrollWheelZoom={false}
