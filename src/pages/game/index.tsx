@@ -17,12 +17,37 @@ const Map = dynamic(() => import("../../components/maps/gameMap"), {
   ssr: false,
 });
 
+const useCountryShape = (iso?: string) => {
+  const [shapeData, setShapeData] = useState<GeoJson>();
+  const { data: shapeUrl, isLoading: shapeLoading } = trpc.useQuery(
+    [
+      "game.get-country-shape-url",
+      {
+        iso: iso ?? "",
+      },
+    ],
+    {
+      enabled: iso != null,
+      refetchOnWindowFocus: false,
+    }
+  );
+  
+  useEffect(() => {
+    const fetchGeoJson = async (url: string) => {
+      const response = await fetch(url);
+      setShapeData(await response.json());
+    };
+    if (shapeUrl) {
+      fetchGeoJson(shapeUrl);
+    }
+  }, [shapeUrl]);
+  return { shapeData, shapeLoading }
+}
+
 const useCountryData = (
   countryIndex?: number,
-  options?: { loadShape: boolean }
 ) => {
-  const [shapeData, setShapeData] = useState<GeoJson>();
-  const { data: country, isLoading: dataLoading } = trpc.useQuery(
+  return trpc.useQuery(
     [
       "game.get-country-by-index",
       {
@@ -34,36 +59,6 @@ const useCountryData = (
       refetchOnWindowFocus: false,
     }
   );
-  const loadShape = options?.loadShape ?? true;
-  const { data: shapeUrl, isLoading: shapeLoading } = trpc.useQuery(
-    [
-      "game.get-country-shape-url",
-      {
-        iso: country?.iso ?? "",
-      },
-    ],
-    {
-      enabled: country != null && loadShape,
-      refetchOnWindowFocus: false,
-    }
-  );
-
-  const isLoading = useMemo(
-    () => dataLoading || shapeLoading,
-    [dataLoading, shapeLoading]
-  );
-
-  useEffect(() => {
-    const fetchGeoJson = async (url: string) => {
-      const response = await fetch(url);
-      setShapeData(await response.json());
-    };
-    if (shapeUrl) {
-      fetchGeoJson(shapeUrl);
-    }
-  }, [shapeUrl]);
-
-  return { shapeData, country, isLoading };
 };
 
 const GamePage: NextPage<{
@@ -72,24 +67,28 @@ const GamePage: NextPage<{
   showDirection: boolean;
   showBorders: boolean;
 }> = ({ countryIndices, rounds, showDirection, showBorders }) => {
+  const [correctGuesses, setCorrectGuesses] = useState<Country[]>([]);
+  const [showCorrectMessage, setShowCorrectMessage] = useState(false);
   const [currentGuess, setCurrentGuess] = useState<Country>();
   const [currentRound, setCurrentRound] = useState(0);
   const [distance, setDistance] = useState<number>();
   const [direction, setDirection] = useState<Direction>();
   const currentCountryIndex = useMemo(
-    () => countryIndices[currentRound]!,
+    () => countryIndices[currentRound],
     [countryIndices, currentRound]
   );
 
-  const { country, shapeData, isLoading } = useCountryData(currentGuess?.index);
-  const { country: searchedCountry } = useCountryData(currentCountryIndex, {
-    loadShape: false,
-  });
+  const { shapeData } = useCountryShape(currentGuess?.iso);
+  const { data: searchedCountry } = useCountryData(currentCountryIndex);
 
   console.log(searchedCountry);
 
   useEffect(() => {
-    if (currentGuess && searchedCountry) {
+    if (
+      currentGuess &&
+      searchedCountry &&
+      currentGuess.iso !== searchedCountry.iso
+    ) {
       const dist = calculateDistance(
         currentGuess.latitude,
         currentGuess.longitude,
@@ -104,19 +103,50 @@ const GamePage: NextPage<{
     }
   }, [currentGuess, searchedCountry, showDirection]);
 
+  useEffect(() => {
+    if (!currentGuess || !searchedCountry) return;
+    if (currentGuess.iso === searchedCountry.iso) {
+      setCorrectGuesses([...correctGuesses, currentGuess]);
+      setCurrentRound(currentRound + 1);
+      setShowCorrectMessage(true);
+      setTimeout(() => setShowCorrectMessage(false), 1000);
+    }
+  }, [currentGuess, searchedCountry, correctGuesses, currentRound]);
+
+  useEffect(() => {
+    if (currentRound >= rounds) {
+      console.log("Finished");
+      setDirection(undefined);
+      setDistance(undefined);
+    }
+  }, [currentRound, rounds])
+
   return (
     <Container>
       <div className="flex flex-col w-screen h-screen items-center gap-8">
-        <div className="h-1/2 w-full">
+        <div className="h-1/2 w-full abolute">
           <Map
-            center={country ?? { latitude: 49, longitude: 10 }}
+            center={currentGuess ?? { latitude: 49, longitude: 10 }}
             geojson={shapeData}
             distance={distance}
             direction={direction}
             showBorders={showBorders}
           />
+          <div className="absolute top-0 left-0 w-full h-1/2 flex justify-center items-center flex-col text-center">
+            {showCorrectMessage && (
+              <h1 className="text-5xl animate-ping duration-1000 font-extrabold text-purple-700">
+                Correct!
+              </h1>
+            )}
+          </div>
         </div>
         <CountrySearchField onCountryInput={setCurrentGuess} />
+        {currentRound}
+        <div className="flex gap-4">
+          {correctGuesses.map((country) => (
+            <div key={country.index}>{country.name}</div>
+          ))}
+        </div>
       </div>
     </Container>
   );

@@ -110,7 +110,10 @@ const GameMap: React.FC<{
           data={geojson}
         >
           {direction && (
-            <Tooltip permanent>
+            <Tooltip
+              permanent
+              position={{ lat: center.latitude, lng: center.longitude }}
+            >
               <DirectionIcon direction={direction} />
             </Tooltip>
           )}
