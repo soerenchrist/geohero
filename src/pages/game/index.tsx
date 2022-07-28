@@ -8,6 +8,7 @@ import Meta from "../../components/common/meta";
 import CorrectCountriesDisplay from "../../components/game/correctCountriesDisplay";
 import CountrySearchField from "../../components/game/countrySearchField";
 import SettingsIcon from "../../components/icons/settings";
+import { getChallengeTokenSettings } from "../../server/data/dynamo";
 import { Country } from "../../server/types/country";
 import { type GeoJson } from "../../server/types/geojson";
 import {
@@ -231,6 +232,22 @@ const GamePage: NextPage<{
 };
 
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
+  const { token } = ctx.query;
+  if (token && typeof token === "string") {
+    const settings = await getChallengeTokenSettings(token);
+    if (settings) {
+      return {
+        props: {
+          countryIndices: settings.countryIds,
+          rounds: settings.rounds,
+          showDirection: settings.showDirections,
+          showBorders: settings.showCountryBorders,
+          showPercentage: settings.showPercentage,
+        },
+      };
+    }
+  }
+
   let rounds = 5;
   const roundsString = ctx.query.rounds;
   if (roundsString && typeof roundsString === "string") {

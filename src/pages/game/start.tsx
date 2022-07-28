@@ -1,10 +1,13 @@
 import { NextPage } from "next";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
+import ChallengeButton from "../../components/challengeButton";
 import Checkbox from "../../components/common/checkbox";
 import Container from "../../components/common/container";
 import Meta from "../../components/common/meta";
 import Spinner from "../../components/common/spinner";
+import { trpc } from "../../utils/trpc";
 
 const useGameSettings = () => {
   const [rounds, setRounds] = useState(5);
@@ -40,7 +43,28 @@ const useGameSettings = () => {
 };
 
 const StartPage: NextPage = () => {
+  const [token, setToken] = useState<string>();
   const settings = useGameSettings();
+  const { mutate: registerToken, isLoading } = trpc.useMutation(
+    "game.register-token",
+    {
+      onSuccess() {
+        router.push(`/game?token=${token}`);
+      },
+    }
+  );
+  const router = useRouter();
+  const handleStart = () => {
+    if (!token) {
+      router.push(settings.url);
+    } else {
+      registerToken({
+        ...settings,
+        token,
+      });
+    }
+  };
+
   return (
     <>
       <Meta />
@@ -67,18 +91,22 @@ const StartPage: NextPage = () => {
             checked={settings.showPercentage}
             onChange={settings.setShowPercentage}
           ></Checkbox>
+          <ChallengeButton onTokenGenerate={setToken}></ChallengeButton>
 
           <button
+            disabled={isLoading}
             className="bg-transparent text-white mt-8 -mb-4 hover:scale-105 font-medium"
             onClick={() => settings.reset}
           >
             Reset values
           </button>
-          <Link href={settings.url}>
-            <button className="w-48 h-16 text-lg font-medium rounded-full hover:scale-105 bg-white">
-              Start
-            </button>
-          </Link>
+          <button
+            disabled={isLoading}
+            onClick={handleStart}
+            className="w-48 h-16 text-lg font-medium rounded-full hover:scale-105 bg-white"
+          >
+            Start
+          </button>
         </div>
       </Container>
     </>
