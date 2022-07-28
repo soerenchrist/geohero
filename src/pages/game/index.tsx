@@ -1,11 +1,13 @@
 import { GetServerSideProps, NextPage } from "next";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Container from "../../components/common/container";
 import Meta from "../../components/common/meta";
 import CorrectCountriesDisplay from "../../components/game/correctCountriesDisplay";
 import CountrySearchField from "../../components/game/countrySearchField";
+import SettingsIcon from "../../components/icons/settings";
 import { Country } from "../../server/types/country";
 import { type GeoJson } from "../../server/types/geojson";
 import {
@@ -35,7 +37,11 @@ const useTimer = () => {
     startTime.current = new Date();
     timer.current = setInterval(
       () =>
-        setElapsedSeconds(Math.floor((new Date().getTime() - startTime.current!.getTime()) / 1000)),
+        setElapsedSeconds(
+          Math.floor(
+            (new Date().getTime() - startTime.current!.getTime()) / 1000
+          )
+        ),
       500
     );
 
@@ -87,7 +93,7 @@ const useCountryData = (countryIndex?: number) => {
       refetchOnWindowFocus: false,
       onSuccess(data) {
         console.log(data);
-      }
+      },
     }
   );
 };
@@ -97,7 +103,14 @@ const GamePage: NextPage<{
   rounds: number;
   showDirection: boolean;
   showBorders: boolean;
-}> = ({ countryIndices, rounds, showDirection, showBorders }) => {
+  showPercentage: boolean;
+}> = ({
+  countryIndices,
+  rounds,
+  showDirection,
+  showBorders,
+  showPercentage,
+}) => {
   const [gameWon, setGameWon] = useState(false);
   const [correctGuesses, setCorrectGuesses] = useState<Country[]>([]);
   const [showCorrectMessage, setShowCorrectMessage] = useState(false);
@@ -113,7 +126,6 @@ const GamePage: NextPage<{
   const { shapeData } = useCountryShape(currentGuess?.iso);
   const { data: searchedCountry } = useCountryData(currentCountryIndex);
   const { elapsedSeconds, stop } = useTimer();
-  console.log(elapsedSeconds);
 
   useEffect(() => {
     if (
@@ -152,7 +164,7 @@ const GamePage: NextPage<{
       setGameWon(true);
       stop();
     }
-  }, [currentRound, rounds, router]);
+  }, [currentRound, rounds, router, stop]);
 
   return (
     <>
@@ -166,12 +178,19 @@ const GamePage: NextPage<{
             <h4 className="text-xl font-bold text-sky-300">
               Congrats, it took you {elapsedSeconds} seconds!
             </h4>
-            <button
-              className="w-48 h-16 text-lg font-medium rounded-full hover:scale-105 bg-white mt-20"
-              onClick={() => router.reload()}
-            >
-              Play again
-            </button>
+            <div className="flex gap-2 mt-20">
+              <button
+                className="w-48 h-16 text-lg font-medium rounded-full hover:scale-105 bg-white"
+                onClick={() => router.reload()}
+              >
+                Play again
+              </button>
+              <Link href="/game/start">
+                <button className="w-16 h-16 rounded-full hover:scale-105 bg-white text-center">
+                  <SettingsIcon className="w-8 h-8 m-auto" />
+                </button>
+              </Link>
+            </div>
           </div>
         )}
         {!gameWon && (
@@ -183,14 +202,13 @@ const GamePage: NextPage<{
                 distance={distance}
                 direction={direction}
                 showBorders={showBorders}
+                showPercentage={showPercentage}
               />
               <div className="absolute top-0 text-right right-0 p-2 text-lg font-bold bg-white m-2 rounded-lg">
                 <div>
                   Round {currentRound + 1}/{rounds}
                 </div>
-                <div>
-                  {elapsedSeconds} s
-                </div>
+                <div>{elapsedSeconds} s</div>
               </div>
               <div className="absolute top-0 left-0 w-screen lg:h-96 h-72 pointer-events-none flex justify-center items-center flex-col text-center">
                 {showCorrectMessage && (
@@ -233,6 +251,13 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     showBorders = value;
   }
 
+  let showPercentage = false;
+  const showPercentageString = ctx.query.showPercentage;
+  if (showPercentageString && typeof showPercentageString === "string") {
+    const value = showPercentageString === "true";
+    showPercentage = value;
+  }
+
   const countryIndices = generateDistinctNumbers(rounds, 0, 198);
   return {
     props: {
@@ -240,6 +265,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
       rounds,
       showDirection,
       showBorders,
+      showPercentage,
     },
   };
 };

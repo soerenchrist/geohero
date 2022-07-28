@@ -43,4 +43,23 @@ export const gameRouter = createRouter()
       });
       return url;
     },
+  })
+  .query("get-country-flag-url", {
+    input: z.object({
+      iso: z.string(),
+    }),
+    async resolve({ input }) {
+      const key = `flags/${input.iso.toLowerCase()}.svg`;
+
+      const params = {
+        Bucket: process.env.S3_BUCKET_NAME,
+        Key: key,
+      };
+
+      const command = new GetObjectCommand(params);
+      const url = await getSignedUrl(s3Client, command, {
+        expiresIn: 3600,
+      });
+      return url;
+    },
   });

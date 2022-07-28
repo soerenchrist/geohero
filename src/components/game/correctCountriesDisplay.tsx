@@ -1,10 +1,44 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Country } from "../../server/types/country";
+import { trpc } from "../../utils/trpc";
+function blobToBase64(blob: Blob) {
+  return new Promise((resolve, _) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      
+      const dataUrl = reader.result as string;
+      var base64 = dataUrl.split(',')[1];
+      return resolve(base64)
+    };
+    reader.readAsDataURL(blob);
+  });
+}
 
 const Cell: React.FC<{ country?: Country }> = ({ country }) => {
+  const [image, setImage] = useState<string>();
+  trpc.useQuery(
+    [
+      "game.get-country-flag-url",
+      {
+        iso: country?.iso ?? "",
+      },
+    ],
+    {
+      enabled: country != null,
+      async onSuccess(url) {
+        const response = await fetch(url);
+        const svg = await response.blob();
+        const base64data = await blobToBase64(svg);
+        
+        setImage(`data:image/svg+xml;base64,${base64data }`);
+      }
+    }
+  );
+
   return (
-    <div className="w-full bg-highlight-card h-32 lg:h-52 rounded-lg flex justify-center text-xl lg:text-3xl font-bold text-white items-center text-center">
+    <div className="w-full bg-highlight-card h-32 lg:h-52 rounded-lg flex flex-col gap-3 justify-center text-xl lg:text-3xl font-bold text-white items-center text-center">
       {!country && <h3>?</h3>}
+      {image && <img src={image} className="max-h-12 max-w-1/2" alt={country!.name}></img>}
       {country && <h3>{country.name}</h3>}
     </div>
   );

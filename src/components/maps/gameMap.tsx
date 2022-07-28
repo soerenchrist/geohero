@@ -71,7 +71,15 @@ const GameMap: React.FC<{
   distance?: number;
   direction?: Direction;
   showBorders: boolean;
-}> = ({ geojson, center, distance, direction, showBorders }) => {
+  showPercentage: boolean;
+}> = ({
+  geojson,
+  center,
+  distance,
+  direction,
+  showBorders,
+  showPercentage,
+}) => {
   const [color, setColor] = useState("#0000ff");
   const [percentage, setPercentage] = useState(0);
 
@@ -81,7 +89,6 @@ const GameMap: React.FC<{
     setPercentage(perc);
 
     const col = getBlendedColor(perc);
-    console.log(col);
     setColor(col);
   }, [distance]);
 
@@ -104,16 +111,20 @@ const GameMap: React.FC<{
       )}
       {geojson && (
         <GeoJSON
-          style={{ color }}
+          style={{ color, fillOpacity: 0.6 }}
           key={geojson.properties.ISO_A2}
           data={geojson}
         >
-          {direction && (
+          {(direction || showPercentage) && (
             <Tooltip
               permanent
               position={{ lat: center.latitude, lng: center.longitude }}
             >
-              <DirectionIcon direction={direction} />
+              <div className="flex gap-2 items-center">
+
+              {showPercentage && <span className="text-lg">{Math.round(percentage)} %</span>}
+              {direction && <DirectionIcon direction={direction} />}
+              </div>
             </Tooltip>
           )}
         </GeoJSON>
