@@ -1,21 +1,16 @@
 import { GetServerSideProps, NextPage } from "next";
 import dynamic from "next/dynamic";
-import Link from "next/link";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Button } from "../../components/common/button";
 import Container from "../../components/common/container";
 import Meta from "../../components/common/meta";
 import CorrectCountriesDisplay from "../../components/game/correctCountriesDisplay";
 import CountrySearchField from "../../components/game/countrySearchField";
-import SettingsIcon from "../../components/icons/settings";
+import GameFinishedScreen from "../../components/game/gameFinishedScreen";
 import { getChallengeTokenSettings } from "../../server/data/dynamo";
 import { Country } from "../../server/types/country";
 import { type GeoJson } from "../../server/types/geojson";
-import {
-  checkGuess,
-  type GuessState,
-} from "../../utils/coordinateUtil";
+import { checkGuess, type GuessState } from "../../utils/coordinateUtil";
 import { generateDistinctNumbers } from "../../utils/randomUtil";
 import { trpc } from "../../utils/trpc";
 
@@ -71,8 +66,10 @@ const useCountryShape = (iso?: string) => {
 
   useEffect(() => {
     const fetchGeoJson = async (url: string) => {
-      const response = await fetch(url);
-      setShapeData(await response.json());
+      try {
+        const response = await fetch(url);
+        setShapeData(await response.json());
+      } catch (e) {}
     };
     if (shapeUrl) {
       fetchGeoJson(shapeUrl);
@@ -121,10 +118,12 @@ const GamePage: NextPage<{
     [countryIndices, currentRound]
   );
 
+  const router = useRouter();
   const { shapeData } = useCountryShape(currentGuess?.iso);
   const { data: searchedCountry } = useCountryData(currentCountryIndex);
   const { elapsedSeconds, stop } = useTimer();
 
+  // Calculate the distance, when the guess changed
   useEffect(() => {
     if (
       currentGuess &&
@@ -136,6 +135,7 @@ const GamePage: NextPage<{
     }
   }, [currentGuess, searchedCountry, settings]);
 
+  // Check, if the entered guess is correct
   useEffect(() => {
     if (!currentGuess || !searchedCountry) return;
     if (currentGuess.iso === searchedCountry.iso) {
@@ -145,7 +145,8 @@ const GamePage: NextPage<{
       setTimeout(() => setShowCorrectMessage(false), 1000);
     }
   }, [currentGuess, searchedCountry, correctGuesses, currentRound]);
-  const router = useRouter();
+
+  // Check, if the game is finished
   useEffect(() => {
     if (currentRound >= settings.rounds) {
       setGuessState(undefined);
@@ -158,24 +159,12 @@ const GamePage: NextPage<{
     <>
       <Meta></Meta>
       <Container>
-        {gameWon && (
-          <div className="flex flex-col w-screen h-screen justify-center items-center">
-            <h1 className="text-3xl lg:text-8xl animate-pulse duration-1000 font-extrabold bg-clip-text text-transparent bg-gradient-to-br from-accent1 to-accent2">
-              You did it!
-            </h1>
-            <h4 className="text-xl font-bold text-accent1">
-              Congrats, it took you {elapsedSeconds} seconds!
-            </h4>
-            <div className="flex gap-2 mt-20">
-              <Button onClick={() => router.reload()}>Play again</Button>
-              <Link href="/game/start">
-                <button className="w-16 h-16 rounded-full hover:scale-105 bg-brand border border-white border-solid text-white text-center">
-                  <SettingsIcon className="w-8 h-8 m-auto" />
-                </button>
-              </Link>
-            </div>
-          </div>
-        )}
+        <GameFinishedScreen
+          show={gameWon}
+          countries={correctGuesses}
+          rounds={settings.rounds}
+          elapsedSeconds={elapsedSeconds}
+        />
         {!gameWon && (
           <div className="flex flex-col w-screen min-h-screen items-center gap-8">
             <div className="lg:h-96 h-72 w-screen abolute">
