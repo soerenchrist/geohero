@@ -1,15 +1,18 @@
 import { GetServerSideProps, NextPage } from "next";
 import dynamic from "next/dynamic";
-import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Container from "../../components/common/container";
 import Meta from "../../components/common/meta";
 import CorrectCountriesDisplay from "../../components/game/correctCountriesDisplay";
 import CountrySearchField from "../../components/game/countrySearchField";
 import GameFinishedScreen from "../../components/game/gameFinishedScreen";
-import { getChallengeTokenSettings } from "../../server/data/dynamo";
+import {
+  getChallengeTokenSettings,
+  getUserResult,
+} from "../../server/data/dynamo";
 import { Country } from "../../server/types/country";
 import { type GeoJson } from "../../server/types/geojson";
+import { getUserToken } from "../../server/util/getUserToken";
 import { checkGuess, type GuessState } from "../../utils/coordinateUtil";
 import { generateDistinctNumbers } from "../../utils/randomUtil";
 import { trpc } from "../../utils/trpc";
@@ -18,8 +21,9 @@ const Map = dynamic(() => import("../../components/maps/gameMap"), {
   ssr: false,
 });
 
-const useTimer = () => {
+const useGameStats = () => {
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [guesses, setGuesses] = useState(0);
   const startTime = useRef<Date>();
   const timer = useRef<NodeJS.Timer>();
 
@@ -28,6 +32,10 @@ const useTimer = () => {
       clearInterval(timer.current);
     }
   }, []);
+
+  const addGuess = useCallback(() => {
+    setGuesses(guesses + 1);
+  }, [guesses, setGuesses]);
 
   useEffect(() => {
     startTime.current = new Date();
@@ -46,7 +54,7 @@ const useTimer = () => {
     };
   }, []);
 
-  return { elapsedSeconds, stop };
+  return { elapsedSeconds, stop, guesses, addGuess };
 };
 
 const useCountryShape = (iso?: string) => {
@@ -106,7 +114,9 @@ export type GameSettings = {
 const GamePage: NextPage<{
   countryIndices: number[];
   settings: GameSettings;
-}> = ({ countryIndices, settings }) => {
+  isChallenge: boolean;
+  challengeToken: string;
+}> = ({ countryIndices, settings, isChallenge, challengeToken }) => {
   const [gameWon, setGameWon] = useState(false);
   const [correctGuesses, setCorrectGuesses] = useState<Country[]>([]);
   const [showCorrectMessage, setShowCorrectMessage] = useState(false);
@@ -117,43 +127,48 @@ const GamePage: NextPage<{
     () => countryIndices[currentRound],
     [countryIndices, currentRound]
   );
-
-  const router = useRouter();
+  const { mutate: saveUserResult } = trpc.useMutation("game.save-user-result");
   const { shapeData } = useCountryShape(currentGuess?.iso);
   const { data: searchedCountry } = useCountryData(currentCountryIndex);
-  const { elapsedSeconds, stop } = useTimer();
+  const { elapsedSeconds, guesses, addGuess, stop } = useGameStats();
 
-  // Calculate the distance, when the guess changed
-  useEffect(() => {
-    if (
-      currentGuess &&
-      searchedCountry &&
-      currentGuess.iso !== searchedCountry.iso
-    ) {
-      const state = checkGuess(currentGuess, searchedCountry);
-      setGuessState(state);
-    }
-  }, [currentGuess, searchedCountry, settings]);
+  const handleGameFinished = () => {
+    setGuessState(undefined);
+    setGameWon(true);
+    stop();
 
-  // Check, if the entered guess is correct
-  useEffect(() => {
-    if (!currentGuess || !searchedCountry) return;
-    if (currentGuess.iso === searchedCountry.iso) {
-      setCorrectGuesses([...correctGuesses, currentGuess]);
-      setCurrentRound(currentRound + 1);
-      setShowCorrectMessage(true);
-      setTimeout(() => setShowCorrectMessage(false), 1000);
+    if (isChallenge && challengeToken) {
+      saveUserResult({
+        challengeToken,
+        timeInSeconds: elapsedSeconds,
+        date: new Date().toISOString(),
+        guesses: guesses + 1, // last guess is not updated yet
+      });
     }
-  }, [currentGuess, searchedCountry, correctGuesses, currentRound]);
+  };
 
-  // Check, if the game is finished
-  useEffect(() => {
-    if (currentRound >= settings.rounds) {
-      setGuessState(undefined);
-      setGameWon(true);
-      stop();
+  const handleCorrectGuess = (guess: Country) => {
+    setCorrectGuesses([...correctGuesses, guess]);
+    const nextRound = currentRound + 1;
+    setCurrentRound(nextRound);
+    setShowCorrectMessage(true);
+    setTimeout(() => setShowCorrectMessage(false), 1000);
+  };
+
+  const handleGuess = (guess: Country) => {
+    setCurrentGuess(guess);
+    if (!searchedCountry) return;
+
+    addGuess();
+    const state = checkGuess(guess, searchedCountry);
+    setGuessState(state);
+    if (guess.iso === searchedCountry.iso) {
+      handleCorrectGuess(guess);
+      if (currentRound + 1 === settings.rounds) {
+        handleGameFinished();
+      }
     }
-  }, [currentRound, settings, router, stop]);
+  };
 
   return (
     <>
@@ -162,6 +177,8 @@ const GamePage: NextPage<{
         <GameFinishedScreen
           show={gameWon}
           countries={correctGuesses}
+          guesses={guesses}
+          isChallenge={isChallenge}
           rounds={settings.rounds}
           elapsedSeconds={elapsedSeconds}
         />
@@ -188,7 +205,7 @@ const GamePage: NextPage<{
                 )}
               </div>
             </div>
-            <CountrySearchField onCountryInput={setCurrentGuess} />
+            <CountrySearchField onCountryInput={handleGuess} />
             <CorrectCountriesDisplay
               countries={correctGuesses}
               rounds={settings.rounds}
@@ -201,9 +218,20 @@ const GamePage: NextPage<{
 };
 
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
-  const { token } = ctx.query;
-  if (token && typeof token === "string") {
-    const settings = await getChallengeTokenSettings(token);
+  const userToken = getUserToken(ctx.req, ctx.res);
+  const { challenge } = ctx.query;
+  if (challenge && typeof challenge === "string") {
+    const result = await getUserResult(challenge, userToken);
+    if (result) {
+      return {
+        redirect: {
+          destination: "/game/result?challenge=" + challenge,
+        },
+        props: {},
+      };
+    }
+
+    const settings = await getChallengeTokenSettings(challenge);
     if (settings) {
       return {
         props: {
@@ -214,6 +242,8 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
             showBorders: settings.showCountryBorders,
             showPercentage: settings.showPercentage,
           },
+          isChallenge: true,
+          challengeToken: challenge,
         },
       };
     }
@@ -256,6 +286,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
         showBorders,
         showPercentage,
       },
+      isChallenge: false,
     },
   };
 };

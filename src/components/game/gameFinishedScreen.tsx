@@ -6,10 +6,21 @@ import CorrectCountriesDisplay from "./correctCountriesDisplay";
 
 const GameFinishedScreen: React.FC<{
   elapsedSeconds: number;
+  guesses: number;
   countries: Country[];
   show: boolean;
+  isChallenge: boolean;
+  showCountries?: boolean;
   rounds: number;
-}> = ({ show, elapsedSeconds, countries, rounds }) => {
+}> = ({
+  show,
+  elapsedSeconds,
+  showCountries,
+  countries,
+  rounds,
+  guesses,
+  isChallenge,
+}) => {
   const router = useRouter();
   return (
     <div
@@ -23,10 +34,16 @@ const GameFinishedScreen: React.FC<{
         You did it!
       </h1>
       <h4 className="text-xl font-bold text-accent1">
-        Congrats, it took you {elapsedSeconds} seconds!
+        Congrats, it took you {elapsedSeconds} seconds and {guesses} guesses!
       </h4>
       <div className="flex gap-2 mt-20">
-        <Button onClick={() => router.reload()}>Play again</Button>
+        <Button
+          onClick={() =>
+            isChallenge ? router.push("/game/start") : router.reload()
+          }
+        >
+          Play again
+        </Button>
         <button
           onClick={() => router.push("/")}
           className="w-16 h-16 rounded-full hover:scale-105 bg-brand border border-white border-solid text-white text-center"
@@ -35,7 +52,10 @@ const GameFinishedScreen: React.FC<{
         </button>
       </div>
       <div className="p-8"></div>
-      <CorrectCountriesDisplay countries={countries} rounds={rounds} />
+      {showCountries === null ||
+        (showCountries === true && (
+          <CorrectCountriesDisplay countries={countries} rounds={rounds} />
+        ))}
     </div>
   );
 };

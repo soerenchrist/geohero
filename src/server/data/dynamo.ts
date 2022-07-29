@@ -50,7 +50,7 @@ export const ChallengeTokenSchema = z.object({
   showDirections: z.boolean(),
   showPercentage: z.boolean(),
   token: z.string().min(5),
-  countryIds: z.number().array()
+  countryIds: z.number().array(),
 });
 
 export type RegisterToken = z.infer<typeof ChallengeTokenSchema>;
@@ -72,8 +72,8 @@ export const getChallengeTokenSettings = async (token: string) => {
     TableName: process.env.DYNAMO_TABLE_NAME,
     Key: {
       pk: "INVITE",
-      sk: token
-    }
+      sk: token,
+    },
   });
 
   if (result.Item) {
@@ -81,4 +81,41 @@ export const getChallengeTokenSettings = async (token: string) => {
   }
 
   return null;
-}
+};
+
+export const UserResultSchema = z.object({
+  userToken: z.string(),
+  challengeToken: z.string(),
+  timeInSeconds: z.number().min(0),
+  guesses: z.number().min(0),
+  date: z.string(),
+  timeDetails: z.map(z.string(), z.number()).optional(),
+});
+export type UserResult = z.infer<typeof UserResultSchema>;
+
+export const saveUserResult = async (result: UserResult) => {
+  const item = {
+    pk: "CHALLENGE#" + result.challengeToken,
+    sk: "USER#" + result.userToken,
+    ...result,
+  };
+
+  await documentClient.put({
+    TableName: process.env.DYNAMO_TABLE_NAME,
+    Item: item,
+  });
+};
+
+export const getUserResult = async (challenge: string, user: string) => {
+  const result = await documentClient.get({
+    Key: {
+      pk: "CHALLENGE#" + challenge,
+      sk: "USER#" + user,
+    },
+    TableName: process.env.DYNAMO_TABLE_NAME,
+  });
+
+  if (result.Item) return UserResultSchema.parse(result.Item);
+
+  return null;
+};

@@ -6,11 +6,14 @@ import {
   getCountryByName,
   registerChallengeToken,
   ChallengeTokenSchema,
+  UserResultSchema,
+  saveUserResult,
 } from "../data/dynamo";
 import { s3Client } from "../data/s3";
 import { createRouter } from "./context";
 import { nanoid } from "nanoid";
 import { generateDistinctNumbers } from "../../utils/randomUtil";
+import { TRPCError } from "@trpc/server";
 
 export const gameRouter = createRouter()
   .query("get-country-by-index", {
@@ -86,6 +89,19 @@ export const gameRouter = createRouter()
       await registerChallengeToken({
         ...input,
         countryIds,
+      });
+    },
+  })
+  .mutation("save-user-result", {
+    input: UserResultSchema.omit({
+      userToken: true,
+    }),
+    async resolve({ ctx, input }) {
+      if (!ctx.userToken) throw new TRPCError({ code: "FORBIDDEN" });
+      console.log("Save");
+      await saveUserResult({
+        ...input,
+        userToken: ctx.userToken,
       });
     },
   });
