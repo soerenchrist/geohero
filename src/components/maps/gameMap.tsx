@@ -6,9 +6,14 @@ import {
   Tooltip,
   useMap,
 } from "react-leaflet";
+import { GameSettings } from "../../pages/game";
 import { type GeoJson } from "../../server/types/geojson";
 import { getBlendedColor } from "../../utils/colorUtil";
-import { Direction, distanceToPercentage } from "../../utils/coordinateUtil";
+import {
+  Direction,
+  distanceToPercentage,
+  GuessState,
+} from "../../utils/coordinateUtil";
 import {
   attribution,
   borderLayerUrl,
@@ -68,30 +73,9 @@ const DirectionIcon = ({ direction }: { direction: Direction }) => {
 const GameMap: React.FC<{
   geojson?: GeoJson;
   center: Coordinate;
-  distance?: number;
-  direction?: Direction;
-  showBorders: boolean;
-  showPercentage: boolean;
-}> = ({
-  geojson,
-  center,
-  distance,
-  direction,
-  showBorders,
-  showPercentage,
-}) => {
-  const [color, setColor] = useState("#0000ff");
-  const [percentage, setPercentage] = useState(0);
-
-  useEffect(() => {
-    if (!distance) return;
-    const perc = distanceToPercentage(distance);
-    setPercentage(perc);
-
-    const col = getBlendedColor(perc);
-    setColor(col);
-  }, [distance]);
-
+  guessState?: GuessState;
+  settings: GameSettings;
+}> = ({ geojson, center, guessState, settings }) => {
   return (
     <MapContainer
       className="h-72 lg:h-full z-0"
@@ -102,7 +86,7 @@ const GameMap: React.FC<{
       doubleClickZoom={false}
     >
       <TileLayer attribution={attribution} url={layerUrl} />
-      {showBorders && (
+      {settings.showBorders && (
         <TileLayer
           attribution={attribution}
           url={borderLayerUrl}
@@ -111,19 +95,25 @@ const GameMap: React.FC<{
       )}
       {geojson && (
         <GeoJSON
-          style={{ color, fillOpacity: 0.6 }}
+          style={{ color: guessState?.color, fillOpacity: 0.6 }}
           key={geojson.properties.ISO_A2}
           data={geojson}
         >
-          {(direction || showPercentage) && (
+          {((guessState?.direction && settings.showDirection) ||
+            settings.showPercentage) && (
             <Tooltip
               permanent
               position={{ lat: center.latitude, lng: center.longitude }}
             >
               <div className="flex gap-2 items-center">
-
-              {showPercentage && <span className="text-lg">{Math.round(percentage)} %</span>}
-              {direction && <DirectionIcon direction={direction} />}
+                {settings.showPercentage && guessState?.percentage && (
+                  <span className="text-lg">
+                    {Math.round(guessState.percentage)} %
+                  </span>
+                )}
+                {guessState?.direction && (
+                  <DirectionIcon direction={guessState.direction} />
+                )}
               </div>
             </Tooltip>
           )}

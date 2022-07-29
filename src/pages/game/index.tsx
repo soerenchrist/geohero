@@ -14,8 +14,10 @@ import { Country } from "../../server/types/country";
 import { type GeoJson } from "../../server/types/geojson";
 import {
   calculateDistance,
+  checkGuess,
   Direction,
   directionTo,
+  GuessState,
 } from "../../utils/coordinateUtil";
 import { generateDistinctNumbers } from "../../utils/randomUtil";
 import { trpc } from "../../utils/trpc";
@@ -100,26 +102,23 @@ const useCountryData = (countryIndex?: number) => {
   );
 };
 
-const GamePage: NextPage<{
-  countryIndices: number[];
+export type GameSettings = {
   rounds: number;
   showDirection: boolean;
   showBorders: boolean;
   showPercentage: boolean;
-}> = ({
-  countryIndices,
-  rounds,
-  showDirection,
-  showBorders,
-  showPercentage,
-}) => {
+};
+
+const GamePage: NextPage<{
+  countryIndices: number[];
+  settings: GameSettings;
+}> = ({ countryIndices, settings }) => {
   const [gameWon, setGameWon] = useState(false);
   const [correctGuesses, setCorrectGuesses] = useState<Country[]>([]);
   const [showCorrectMessage, setShowCorrectMessage] = useState(false);
   const [currentGuess, setCurrentGuess] = useState<Country>();
   const [currentRound, setCurrentRound] = useState(0);
-  const [distance, setDistance] = useState<number>();
-  const [direction, setDirection] = useState<Direction>();
+  const [guessState, setGuessState] = useState<GuessState>();
   const currentCountryIndex = useMemo(
     () => countryIndices[currentRound],
     [countryIndices, currentRound]
@@ -135,19 +134,10 @@ const GamePage: NextPage<{
       searchedCountry &&
       currentGuess.iso !== searchedCountry.iso
     ) {
-      const dist = calculateDistance(
-        currentGuess.latitude,
-        currentGuess.longitude,
-        searchedCountry.latitude,
-        searchedCountry.longitude
-      );
-      setDistance(dist);
-      if (showDirection) {
-        const dir = directionTo(currentGuess, searchedCountry);
-        setDirection(dir);
-      }
+      const state = checkGuess(currentGuess, searchedCountry);
+      setGuessState(state);
     }
-  }, [currentGuess, searchedCountry, showDirection]);
+  }, [currentGuess, searchedCountry, settings]);
 
   useEffect(() => {
     if (!currentGuess || !searchedCountry) return;
@@ -160,13 +150,12 @@ const GamePage: NextPage<{
   }, [currentGuess, searchedCountry, correctGuesses, currentRound]);
   const router = useRouter();
   useEffect(() => {
-    if (currentRound >= rounds) {
-      setDirection(undefined);
-      setDistance(undefined);
+    if (currentRound >= settings.rounds) {
+      setGuessState(undefined);
       setGameWon(true);
       stop();
     }
-  }, [currentRound, rounds, router, stop]);
+  }, [currentRound, settings, router, stop]);
 
   return (
     <>
@@ -181,11 +170,7 @@ const GamePage: NextPage<{
               Congrats, it took you {elapsedSeconds} seconds!
             </h4>
             <div className="flex gap-2 mt-20">
-              <Button
-                onClick={() => router.reload()}
-              >
-                Play again
-              </Button>
+              <Button onClick={() => router.reload()}>Play again</Button>
               <Link href="/game/start">
                 <button className="w-16 h-16 rounded-full hover:scale-105 bg-brand border border-white border-solid text-white text-center">
                   <SettingsIcon className="w-8 h-8 m-auto" />
@@ -200,14 +185,12 @@ const GamePage: NextPage<{
               <Map
                 center={currentGuess ?? { latitude: 49, longitude: 10 }}
                 geojson={shapeData}
-                distance={distance}
-                direction={direction}
-                showBorders={showBorders}
-                showPercentage={showPercentage}
+                guessState={guessState}
+                settings={settings}
               />
               <div className="absolute top-0 text-right right-0 p-2 text-lg font-bold bg-white m-2 rounded-lg">
                 <div>
-                  Round {currentRound + 1}/{rounds}
+                  Round {currentRound + 1}/{settings.rounds}
                 </div>
                 <div>{elapsedSeconds} s</div>
               </div>
@@ -222,7 +205,7 @@ const GamePage: NextPage<{
             <CountrySearchField onCountryInput={setCurrentGuess} />
             <CorrectCountriesDisplay
               countries={correctGuesses}
-              rounds={rounds}
+              rounds={settings.rounds}
             />
           </div>
         )}
@@ -239,10 +222,12 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
       return {
         props: {
           countryIndices: settings.countryIds,
-          rounds: settings.rounds,
-          showDirection: settings.showDirections,
-          showBorders: settings.showCountryBorders,
-          showPercentage: settings.showPercentage,
+          settings: {
+            rounds: settings.rounds,
+            showDirection: settings.showDirections,
+            showBorders: settings.showCountryBorders,
+            showPercentage: settings.showPercentage,
+          },
         },
       };
     }
@@ -279,10 +264,12 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   return {
     props: {
       countryIndices,
-      rounds,
-      showDirection,
-      showBorders,
-      showPercentage,
+      settings: {
+        rounds,
+        showDirection,
+        showBorders,
+        showPercentage,
+      },
     },
   };
 };

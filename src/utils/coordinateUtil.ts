@@ -1,3 +1,33 @@
+import { Country } from "../server/types/country";
+import { getBlendedColor } from "./colorUtil";
+
+export type GuessState = {
+  distance: number;
+  percentage: number;
+  color: string;
+  direction: Direction
+}
+
+export const checkGuess = (guess: Country, searched: Country) => {
+  
+  const distance = calculateDistance(
+    guess.latitude,
+    guess.longitude,
+    searched.latitude,
+    searched.longitude
+  );
+  const percentage = distanceToPercentage(distance);
+  const color = getBlendedColor(percentage);
+  const direction = directionTo(guess, searched);
+
+  return {
+    distance,
+    percentage,
+    color,
+    direction
+  }
+}
+
 export const calculateDistance = (
   lat1: number,
   lon1: number,
