@@ -6,14 +6,9 @@ import {
   Tooltip,
   useMap,
 } from "react-leaflet";
-import { GameSettings } from "../../pages/game";
+import { type GameSettings } from "../../pages/game";
 import { type GeoJson } from "../../server/types/geojson";
-import { getBlendedColor } from "../../utils/colorUtil";
-import {
-  Direction,
-  distanceToPercentage,
-  GuessState,
-} from "../../utils/coordinateUtil";
+import { Direction, type GuessState } from "../../utils/coordinateUtil";
 import {
   attribution,
   borderLayerUrl,

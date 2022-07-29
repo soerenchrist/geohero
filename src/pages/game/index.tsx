@@ -13,11 +13,8 @@ import { getChallengeTokenSettings } from "../../server/data/dynamo";
 import { Country } from "../../server/types/country";
 import { type GeoJson } from "../../server/types/geojson";
 import {
-  calculateDistance,
   checkGuess,
-  Direction,
-  directionTo,
-  GuessState,
+  type GuessState,
 } from "../../utils/coordinateUtil";
 import { generateDistinctNumbers } from "../../utils/randomUtil";
 import { trpc } from "../../utils/trpc";
