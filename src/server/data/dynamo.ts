@@ -98,7 +98,7 @@ export type UserResult = z.infer<typeof UserResultSchema>;
 // make sure to have a key that sorts alphabetically
 const createSortableKey = (time: number) => {
   const sortString = time.toString();
-  return sortString.padStart(10, '0');
+  return sortString.padStart(10, "0");
 };
 
 export const saveUserResult = async (result: UserResult) => {
@@ -133,19 +133,24 @@ export const getUserResult = async (challenge: string, user: string) => {
 
 export const getLeaderboard = async (challenge: string) => {
   const result = await documentClient.query({
-    KeyConditionExpression: "pk = :pk AND beginsWith(sk, :sk)",
+    KeyConditionExpression: "#pk = :pk AND begins_with(#sk, :sk)",
+    IndexName: "gsi1",
     TableName: process.env.DYNAMO_TABLE_NAME,
+    ExpressionAttributeNames: {
+      "#pk": "gsi1pk",
+      "#sk": "gsi1sk",
+    },
     ExpressionAttributeValues: {
       ":pk": `CHALLENGE#${challenge}`,
-      ":sk": `USER#`
+      ":sk": `USER#`,
     },
-    Limit: 5
+    Limit: 5,
   });
 
   const results: UserResult[] = [];
   if (!result.Items) return results;
 
-  result.Items.forEach(x => results.push(UserResultSchema.parse(x)));
+  result.Items.forEach((x) => results.push(UserResultSchema.parse(x)));
 
-  return result;
-}
+  return results;
+};

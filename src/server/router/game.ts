@@ -8,6 +8,7 @@ import {
   ChallengeTokenSchema,
   UserResultSchema,
   saveUserResult,
+  getLeaderboard,
 } from "../data/dynamo";
 import { s3Client } from "../data/s3";
 import { createRouter } from "./context";
@@ -79,6 +80,16 @@ export const gameRouter = createRouter()
         token: id,
       };
     },
+  })
+  .query("get-leader-board", {
+    input: z.object({
+      challenge: z.string()
+    }),
+    async resolve({ input }) {
+      const board = await getLeaderboard(input.challenge);
+
+      return board;
+    }
   })
   .mutation("register-token", {
     input: ChallengeTokenSchema.omit({

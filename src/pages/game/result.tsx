@@ -8,19 +8,22 @@ const GameResultPage: NextPage<{
   guesses: number;
   timeInSeconds: number;
   date: Date;
-}> = ({ guesses, timeInSeconds }) => {
-  return <Container>
-    
-    <GameFinishedScreen
-          show={true}
-          showCountries={false}
-          countries={[]}
-          isChallenge={true}
-          guesses={guesses}
-          rounds={5}
-          elapsedSeconds={timeInSeconds}
-        />
-  </Container>;
+  challenge: string;
+}> = ({ guesses, timeInSeconds, challenge }) => {
+  return (
+    <Container>
+      <GameFinishedScreen
+        show={true}
+        showCountries={false}
+        countries={[]}
+        isChallenge={true}
+        challengeToken={challenge}
+        guesses={guesses}
+        rounds={5}
+        elapsedSeconds={timeInSeconds}
+      />
+    </Container>
+  );
 };
 
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
@@ -45,6 +48,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
 
   return {
     props: {
+      challenge: challenge,
       guesses: result.guesses,
       timeInSeconds: result.timeInSeconds,
       date: result.date,
