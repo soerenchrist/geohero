@@ -2,6 +2,7 @@ import { useState } from "react";
 import { trpc } from "../utils/trpc";
 import { Button } from "./common/button";
 import CopyIcon from "./icons/copy";
+import toast, { Toaster } from "react-hot-toast";
 
 const ChallengeButton: React.FC<{
   onTokenGenerate: (token: string) => void;
@@ -16,11 +17,17 @@ const ChallengeButton: React.FC<{
   });
 
   const handleCopy = async () => {
-    if (data) await navigator.clipboard.writeText(data.token);
+    if (data) {
+      await navigator.clipboard.writeText(data.token);
+      toast("Url copied to clipboard", {
+        duration: 1000
+      });
+    }
   };
 
   return (
     <>
+      <Toaster />
       {data && (
         <div className="flex">
           <input
