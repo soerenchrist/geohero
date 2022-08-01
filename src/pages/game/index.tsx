@@ -6,6 +6,7 @@ import Meta from "../../components/common/meta";
 import CorrectCountriesDisplay from "../../components/game/correctCountriesDisplay";
 import CountrySearchField from "../../components/game/countrySearchField";
 import GameFinishedScreen from "../../components/game/gameFinishedScreen";
+import { useUsername } from "../../hooks/useUsername";
 import {
   getChallengeTokenSettings,
   getUserResult,
@@ -117,6 +118,7 @@ const GamePage: NextPage<{
   isChallenge: boolean;
   challengeToken: string;
 }> = ({ countryIndices, settings, isChallenge, challengeToken }) => {
+  const { name } = useUsername();
   const [gameWon, setGameWon] = useState(false);
   const [correctGuesses, setCorrectGuesses] = useState<Country[]>([]);
   const [showCorrectMessage, setShowCorrectMessage] = useState(false);
@@ -142,6 +144,7 @@ const GamePage: NextPage<{
         challengeToken,
         timeInSeconds: elapsedSeconds,
         date: new Date().toISOString(),
+        name,
         guesses: guesses + 1, // last guess is not updated yet
       });
     }

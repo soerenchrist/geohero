@@ -98,7 +98,6 @@ export const gameRouter = createRouter()
     }),
     async resolve({ ctx, input }) {
       if (!ctx.userToken) throw new TRPCError({ code: "FORBIDDEN" });
-      console.log("Save");
       await saveUserResult({
         ...input,
         userToken: ctx.userToken,

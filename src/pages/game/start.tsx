@@ -93,7 +93,7 @@ const StartPage: NextPage = () => {
     "game.register-token",
     {
       onSuccess() {
-        router.push(`/game?token=${token}`);
+        router.push(`/game/name?challenge=${token}`);
       },
     }
   );

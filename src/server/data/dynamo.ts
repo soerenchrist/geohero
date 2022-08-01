@@ -89,14 +89,25 @@ export const UserResultSchema = z.object({
   timeInSeconds: z.number().min(0),
   guesses: z.number().min(0),
   date: z.string(),
+  name: z.string().optional(),
   timeDetails: z.map(z.string(), z.number()).optional(),
 });
 export type UserResult = z.infer<typeof UserResultSchema>;
 
+// dynamodb automatically sorts by sort key
+// make sure to have a key that sorts alphabetically
+const createSortableKey = (time: number) => {
+  const sortString = time.toString();
+  return sortString.padStart(10, '0');
+};
+
 export const saveUserResult = async (result: UserResult) => {
+  const sortableKey = createSortableKey(result.timeInSeconds);
   const item = {
     pk: "CHALLENGE#" + result.challengeToken,
-    sk: "USER#" + result.userToken,
+    sk: `USER#${result.userToken}`,
+    gsi1pk: "CHALLENGE#" + result.challengeToken,
+    gsi1sk: `USER#${sortableKey}#${result.userToken}`,
     ...result,
   };
 
@@ -119,3 +130,22 @@ export const getUserResult = async (challenge: string, user: string) => {
 
   return null;
 };
+
+export const getLeaderboard = async (challenge: string) => {
+  const result = await documentClient.query({
+    KeyConditionExpression: "pk = :pk AND beginsWith(sk, :sk)",
+    TableName: process.env.DYNAMO_TABLE_NAME,
+    ExpressionAttributeValues: {
+      ":pk": `CHALLENGE#${challenge}`,
+      ":sk": `USER#`
+    },
+    Limit: 5
+  });
+
+  const results: UserResult[] = [];
+  if (!result.Items) return results;
+
+  result.Items.forEach(x => results.push(UserResultSchema.parse(x)));
+
+  return result;
+}

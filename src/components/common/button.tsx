@@ -10,10 +10,10 @@ export const Button: React.FC<ComponentPropsWithRef<"button"> & Props> = (
   const classes =
     props.variant === "secondary"
       ? "w-48 h-16 text-lg font-medium rounded-full hover:scale-105 bg-brand text-white border-solid border-white border"
-      : "w-48 h-16 text-lg font-medium rounded-full hover:scale-105 text-brand bg-white";
+      : "w-48 h-16 text-lg disabled:bg-gray-300 font-medium rounded-full enabled:hover:scale-105 text-brand bg-white";
   return (
     <button
-      className={classes + " " + (props.className ?? "")}
+      className={`${classes} ${props.className ?? ""}`}
       ref={props.ref}
       {...props}
     ></button>
