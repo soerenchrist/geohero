@@ -1,5 +1,6 @@
 import { GetServerSideProps, NextPage } from "next";
 import Container from "../../components/common/container";
+import Meta from "../../components/common/meta";
 import GameFinishedScreen from "../../components/game/gameFinishedScreen";
 import { getUserResult } from "../../server/data/dynamo";
 import { getUserToken } from "../../server/util/getUserToken";
@@ -11,18 +12,21 @@ const GameResultPage: NextPage<{
   challenge: string;
 }> = ({ guesses, timeInSeconds, challenge }) => {
   return (
-    <Container>
-      <GameFinishedScreen
-        show={true}
-        showCountries={false}
-        countries={[]}
-        isChallenge={true}
-        challengeToken={challenge}
-        guesses={guesses}
-        rounds={5}
-        elapsedSeconds={timeInSeconds}
-      />
-    </Container>
+    <>
+      <Meta />
+      <Container>
+        <GameFinishedScreen
+          show={true}
+          showCountries={false}
+          countries={[]}
+          isChallenge={true}
+          challengeToken={challenge}
+          guesses={guesses}
+          rounds={5}
+          elapsedSeconds={timeInSeconds}
+        />
+      </Container>
+    </>
   );
 };
 

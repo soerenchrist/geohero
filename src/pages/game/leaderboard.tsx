@@ -2,6 +2,7 @@ import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { Button } from "../../components/common/button";
 import Container from "../../components/common/container";
+import Meta from "../../components/common/meta";
 import { trpc } from "../../utils/trpc";
 
 const LeaderBoard: React.FC<{ challenge: string }> = ({ challenge }) => {
@@ -23,6 +24,8 @@ const LeaderBoard: React.FC<{ challenge: string }> = ({ challenge }) => {
   };
 
   return (
+    <>
+    <Meta></Meta>
     <Container>
       <div className="flex lg:justify-center justify-start lg:pt-0 pt-24 items-center h-screen flex-col gap-3">
         <h1 className="text-5xl lg:text-8xl font-extrabold text-white">
@@ -51,6 +54,7 @@ const LeaderBoard: React.FC<{ challenge: string }> = ({ challenge }) => {
         </Button>
       </div>
     </Container>
+    </>
   );
 };
 

@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import { Button } from "../../components/common/button";
 import Container from "../../components/common/container";
 import Input from "../../components/common/input";
+import Meta from "../../components/common/meta";
 import { useUsername } from "../../hooks/useUsername";
 
 
@@ -17,6 +18,8 @@ const NamePage: NextPage = () => {
   };
 
   return (
+    <>
+    <Meta/>
     <Container>
       <div className="flex flex-col h-screen justify-center items-center">
         <label className="font-medium text-sm text-white" htmlFor="name">
@@ -38,6 +41,7 @@ const NamePage: NextPage = () => {
         </Button>
       </div>
     </Container>
+    </>
   );
 };
 

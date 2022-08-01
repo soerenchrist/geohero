@@ -39,7 +39,7 @@ const useLocalSettings = (props: ReturnType<typeof useGameSettings>) => {
         setRounds(result.data.rounds);
       }
     } catch (e) {
-      console.log(e);
+      console.error(e);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

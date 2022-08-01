@@ -98,9 +98,6 @@ const useCountryData = (countryIndex?: number) => {
     {
       enabled: countryIndex != null,
       refetchOnWindowFocus: false,
-      onSuccess(data) {
-        console.log(data);
-      },
     }
   );
 };
@@ -182,6 +179,7 @@ const GamePage: NextPage<{
           countries={correctGuesses}
           guesses={guesses}
           isChallenge={isChallenge}
+          challengeToken={challengeToken}
           rounds={settings.rounds}
           elapsedSeconds={elapsedSeconds}
         />
