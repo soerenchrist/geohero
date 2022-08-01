@@ -98,7 +98,7 @@ const GameMap: React.FC<{
           key={geojson.properties.ISO_A2}
           data={geojson}
         >
-          {((guessState?.direction && settings.showDirection) ||
+          {((guessState && settings.showDirection) ||
             settings.showPercentage) && (
             <Tooltip
               permanent
