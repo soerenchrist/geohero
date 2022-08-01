@@ -23,6 +23,7 @@ const Cell: React.FC<{ country?: Country }> = ({ country }) => {
       },
     ],
     {
+      refetchOnWindowFocus: false,
       enabled: country != null,
       async onSuccess(url) {
         const response = await fetch(url);
