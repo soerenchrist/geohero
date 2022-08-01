@@ -44,7 +44,7 @@ const LeaderBoard: React.FC<{ challenge: string }> = ({ challenge }) => {
               <span className="font-extrabold text-4xl">{index + 1}</span>
               <div className="flex justify-between w-full">
                 <span>{item.name}</span>
-                <span>{item.timeInSeconds}s</span>
+                <span>{Math.round(item.timeInMillis / 100) / 10} s</span>
               </div>
             </div>
           </div>

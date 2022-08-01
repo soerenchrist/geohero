@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import {
   GeoJSON,
   MapContainer,
@@ -8,7 +8,7 @@ import {
 } from "react-leaflet";
 import { type GameSettings } from "../../pages/game";
 import { type GeoJson } from "../../server/types/geojson";
-import { Direction, type GuessState } from "../../utils/coordinateUtil";
+import { type GuessState } from "../../utils/coordinateUtil";
 import {
   attribution,
   borderLayerUrl,
@@ -110,9 +110,7 @@ const GameMap: React.FC<{
                     {Math.round(guessState.percentage)} %
                   </span>
                 )}
-                {guessState && (
-                  <DirectionIcon guessState={guessState} />
-                )}
+                {settings.showDirection && guessState && <DirectionIcon guessState={guessState} />}
               </div>
             </Tooltip>
           )}

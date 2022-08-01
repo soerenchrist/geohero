@@ -86,7 +86,7 @@ export const getChallengeTokenSettings = async (token: string) => {
 export const UserResultSchema = z.object({
   userToken: z.string(),
   challengeToken: z.string(),
-  timeInSeconds: z.number().min(0),
+  timeInMillis: z.number().min(0),
   guesses: z.number().min(0),
   date: z.string(),
   name: z.string().optional(),
@@ -102,7 +102,7 @@ const createSortableKey = (time: number) => {
 };
 
 export const saveUserResult = async (result: UserResult) => {
-  const sortableKey = createSortableKey(result.timeInSeconds);
+  const sortableKey = createSortableKey(result.timeInMillis);
   const item = {
     pk: "CHALLENGE#" + result.challengeToken,
     sk: `USER#${result.userToken}`,

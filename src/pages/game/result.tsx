@@ -7,10 +7,10 @@ import { getUserToken } from "../../server/util/getUserToken";
 
 const GameResultPage: NextPage<{
   guesses: number;
-  timeInSeconds: number;
+  timeInMillis: number;
   date: Date;
   challenge: string;
-}> = ({ guesses, timeInSeconds, challenge }) => {
+}> = ({ guesses, timeInMillis, challenge }) => {
   return (
     <>
       <Meta />
@@ -23,7 +23,7 @@ const GameResultPage: NextPage<{
           challengeToken={challenge}
           guesses={guesses}
           rounds={5}
-          elapsedSeconds={timeInSeconds}
+          elapsedSeconds={Math.round(timeInMillis / 1000)}
         />
       </Container>
     </>
@@ -54,7 +54,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     props: {
       challenge: challenge,
       guesses: result.guesses,
-      timeInSeconds: result.timeInSeconds,
+      timeInMillis: result.timeInMillis,
       date: result.date,
     },
   };

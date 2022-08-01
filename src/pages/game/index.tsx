@@ -55,7 +55,7 @@ const useGameStats = () => {
     };
   }, []);
 
-  return { elapsedSeconds, stop, guesses, addGuess };
+  return { elapsedSeconds, stop, guesses, addGuess, startTime };
 };
 
 const useCountryShape = (iso?: string) => {
@@ -129,17 +129,19 @@ const GamePage: NextPage<{
   const { mutate: saveUserResult } = trpc.useMutation("game.save-user-result");
   const { shapeData } = useCountryShape(currentGuess?.iso);
   const { data: searchedCountry } = useCountryData(currentCountryIndex);
-  const { elapsedSeconds, guesses, addGuess, stop } = useGameStats();
+  const { elapsedSeconds, guesses, addGuess, startTime, stop } = useGameStats();
 
   const handleGameFinished = () => {
+    const durationMillis = new Date().getTime() - startTime.current!.getTime();
     setGuessState(undefined);
     setGameWon(true);
     stop();
 
     if (isChallenge && challengeToken) {
+      
       saveUserResult({
         challengeToken,
-        timeInSeconds: elapsedSeconds,
+        timeInMillis: durationMillis,
         date: new Date().toISOString(),
         name,
         guesses: guesses + 1, // last guess is not updated yet
