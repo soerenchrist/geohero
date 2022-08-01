@@ -14,6 +14,7 @@ import {
   borderLayerUrl,
   layerUrl,
 } from "../../utils/mapConstants";
+import CheckIcon from "../icons/check";
 import EastIcon from "../icons/east";
 import NorthIcon from "../icons/north";
 import NorthEastIcon from "../icons/northEast";
@@ -38,11 +39,14 @@ const PositionHandler: React.FC<{ center: Coordinate }> = ({ center }) => {
   return <></>;
 };
 
-const DirectionIcon = ({ direction }: { direction: Direction }) => {
+const DirectionIcon = ({ guessState }: { guessState: GuessState }) => {
   const classes = "w-7 h-7";
 
   const icon = useMemo(() => {
-    switch (direction) {
+    if (guessState.distance === 0) {
+      return <CheckIcon className={classes}></CheckIcon>;
+    }
+    switch (guessState.direction) {
       case "east":
         return <EastIcon className={classes} />;
       case "north":
@@ -60,7 +64,7 @@ const DirectionIcon = ({ direction }: { direction: Direction }) => {
       case "south-west":
         return <SouthWestIcon className={classes} />;
     }
-  }, [direction]);
+  }, [guessState]);
 
   return icon;
 };
@@ -101,13 +105,13 @@ const GameMap: React.FC<{
               position={{ lat: center.latitude, lng: center.longitude }}
             >
               <div className="flex gap-2 items-center">
-                {settings.showPercentage && guessState?.percentage && (
+                {settings.showPercentage && guessState && (
                   <span className="text-lg">
                     {Math.round(guessState.percentage)} %
                   </span>
                 )}
-                {guessState?.direction && (
-                  <DirectionIcon direction={guessState.direction} />
+                {guessState && (
+                  <DirectionIcon guessState={guessState} />
                 )}
               </div>
             </Tooltip>
