@@ -1,3 +1,5 @@
+import { LatLngExpression } from "leaflet";
+import { useMemo } from "react";
 import { MapContainer, Marker, TileLayer, Tooltip } from "react-leaflet";
 import { Country } from "../../server/types/country";
 import {
@@ -6,6 +8,20 @@ import {
   layerUrl,
 } from "../../utils/mapConstants";
 import { blueMarker } from "./customMarkers";
+
+const marker = blueMarker;
+
+const CountryMarker: React.FC<{ country: Country }> = ({ country }) => {
+  const position = useMemo<LatLngExpression>(
+    () => [country.latitude, country.longitude],
+    [country]
+  );
+  return (
+    <Marker icon={marker} position={position}>
+      <Tooltip>{country.name}</Tooltip>
+    </Marker>
+  );
+};
 
 const WorldGuesserMap: React.FC<{ guessedCountries: Country[] }> = ({
   guessedCountries,
@@ -27,13 +43,7 @@ const WorldGuesserMap: React.FC<{ guessedCountries: Country[] }> = ({
       />
 
       {guessedCountries.map((country) => (
-        <Marker
-          key={country.index}
-          icon={blueMarker}
-          position={[country.latitude, country.longitude]}
-        >
-          <Tooltip>{country.name}</Tooltip>
-        </Marker>
+        <CountryMarker key={country.index} country={country} />
       ))}
     </MapContainer>
   );
