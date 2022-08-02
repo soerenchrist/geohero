@@ -214,17 +214,17 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     if (!isNaN(value)) rounds = value;
   }
 
-  let showDirection = false;
+  let showDirections = false;
   const showDirString = ctx.query.showDirs;
   if (showDirString && typeof showDirString === "string") {
     const value = showDirString === "true";
-    showDirection = value;
+    showDirections = value;
   }
-  let showBorders = false;
+  let showCountryBorders = false;
   const showBordersString = ctx.query.showBorders;
   if (showBordersString && typeof showBordersString === "string") {
     const value = showBordersString === "true";
-    showBorders = value;
+    showCountryBorders = value;
   }
 
   let showPercentage = false;
@@ -237,12 +237,12 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const countryIndices = generateDistinctNumbers(rounds, 0, 198);
   return {
     props: {
-      countryIndices,
       settings: {
         rounds,
-        showDirection,
-        showBorders,
+        showDirections,
+        showCountryBorders,
         showPercentage,
+        countryIndices,
       },
       isChallenge: false,
     },

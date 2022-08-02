@@ -14,3 +14,4 @@ export const CountrySearchSettingsSchema = z.object({
 });
 
 export type CountrySearchSettings = z.infer<typeof CountrySearchSettingsSchema>
+export type WorldGuesserSettings = z.infer<typeof WorldGuesserSettingsSchema>

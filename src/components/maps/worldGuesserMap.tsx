@@ -23,9 +23,10 @@ const CountryMarker: React.FC<{ country: Country }> = ({ country }) => {
   );
 };
 
-const WorldGuesserMap: React.FC<{ guessedCountries: Country[] }> = ({
-  guessedCountries,
-}) => {
+const WorldGuesserMap: React.FC<{
+  guessedCountries: Country[];
+  showCountryBorders: boolean;
+}> = ({ guessedCountries, showCountryBorders }) => {
   return (
     <MapContainer
       className="h-144 z-0"
@@ -36,12 +37,13 @@ const WorldGuesserMap: React.FC<{ guessedCountries: Country[] }> = ({
       doubleClickZoom={false}
     >
       <TileLayer attribution={attribution} url={layerUrl} />
-      <TileLayer
-        attribution={attribution}
-        url={borderLayerUrl}
-        subdomains={["a", "b", "c", "d"]}
-      />
-
+      {showCountryBorders && (
+        <TileLayer
+          attribution={attribution}
+          url={borderLayerUrl}
+          subdomains={["a", "b", "c", "d"]}
+        />
+      )}
       {guessedCountries.map((country) => (
         <CountryMarker key={country.index} country={country} />
       ))}

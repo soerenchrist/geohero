@@ -8,9 +8,9 @@ import Container from "../../components/common/container";
 import Meta from "../../components/common/meta";
 import Spinner from "../../components/common/spinner";
 import Title from "../../components/common/title";
+import { useRegisterToken } from "../../hooks/useRegisterToken";
 import { useGameSettings } from "../../hooks/useSettings";
 import { WorldGuesserSettingsSchema } from "../../server/types/settings";
-import { trpc } from "../../utils/trpc";
 
 const StartPage: NextPage = () => {
   const [token, setToken] = useState<string>();
@@ -20,15 +20,7 @@ const StartPage: NextPage = () => {
       showCountryBorders: true,
       showMissingCountries: false,
     });
-  const { mutate: registerToken, isLoading } = trpc.useMutation(
-    "game.register-token",
-    {
-      onSuccess() {
-        router.push(`/country-search/name?challenge=${token}`);
-      },
-    }
-  );
-
+  const { registerToken, isLoading } = useRegisterToken("world-guesser");
   const router = useRouter();
   const handleStart = () => {
     saveSettings();

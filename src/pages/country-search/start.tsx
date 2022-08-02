@@ -8,10 +8,10 @@ import Container from "../../components/common/container";
 import Meta from "../../components/common/meta";
 import Spinner from "../../components/common/spinner";
 import Title from "../../components/common/title";
+import { useRegisterToken } from "../../hooks/useRegisterToken";
 import { useGameSettings } from "../../hooks/useSettings";
 import { CountrySearchSettingsSchema } from "../../server/types/settings";
 import { generateDistinctNumbers } from "../../utils/randomUtil";
-import { trpc } from "../../utils/trpc";
 
 const StartPage: NextPage = () => {
   const [token, setToken] = useState<string>();
@@ -23,14 +23,7 @@ const StartPage: NextPage = () => {
       showPercentage: false,
       countryIndices: [] as number[],
     });
-  const { mutate: registerToken, isLoading } = trpc.useMutation(
-    "game.register-token",
-    {
-      onSuccess() {
-        router.push(`/country-search/name?challenge=${token}`);
-      },
-    }
-  );
+  const { registerToken, isLoading } = useRegisterToken("country-search");
   const router = useRouter();
   const handleStart = () => {
     saveSettings();

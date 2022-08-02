@@ -1,4 +1,4 @@
-import { NextPage } from "next";
+import { GetServerSideProps, NextPage } from "next";
 import dynamic from "next/dynamic";
 import { useRef, useState } from "react";
 import { Button } from "../../components/common/button";
@@ -7,17 +7,22 @@ import Meta from "../../components/common/meta";
 import CountrySearchField from "../../components/game/countrySearchField";
 import MissingCountriesList from "../../components/world/missingCountriesList";
 import { useGameStats } from "../../hooks/useGameStats";
+import {
+  getChallengeTokenSettings,
+  getUserResult,
+} from "../../server/data/dynamo";
 import { Country } from "../../server/types/country";
+import { WorldGuesserSettings } from "../../server/types/settings";
+import { getUserToken } from "../../server/util/getUserToken";
 
 const Map = dynamic(() => import("../../components/maps/worldGuesserMap"), {
   ssr: false,
 });
 
-export type GameSettings = {
-  showUnguessed: boolean;
-};
-
-const GamePage: NextPage<{ settings: GameSettings }> = ({ settings }) => {
+const GamePage: NextPage<{
+  settings: WorldGuesserSettings;
+  isChallenge: boolean;
+}> = ({ settings, isChallenge }) => {
   const unguessedRef = useRef(Array.from(Array(198).keys()));
   const [guessedCountries, setGuessedCountries] = useState<Country[]>([]);
   const [message, setMessage] = useState<string>();
@@ -54,7 +59,10 @@ const GamePage: NextPage<{ settings: GameSettings }> = ({ settings }) => {
         {gameRunning && (
           <div className="flex flex-col w-screen min-h-screen items-center gap-8">
             <div className="h-144 w-screen abolute">
-              <Map guessedCountries={guessedCountries} />
+              <Map
+                showCountryBorders={settings.showCountryBorders}
+                guessedCountries={guessedCountries}
+              />
 
               <div className="absolute top-0 text-right right-0 p-2 text-lg font-bold bg-white m-2 rounded-lg">
                 <div>{guessedCountries.length} / 198</div>
@@ -76,6 +84,61 @@ const GamePage: NextPage<{ settings: GameSettings }> = ({ settings }) => {
       </Container>
     </>
   );
+};
+
+export const getServerSideProps: GetServerSideProps = async (ctx) => {
+  const userToken = getUserToken(ctx.req, ctx.res);
+  const { challenge } = ctx.query;
+  if (challenge && typeof challenge === "string") {
+    const result = await getUserResult(challenge, userToken);
+    if (result) {
+      return {
+        redirect: {
+          destination: "/world-guesser/result?challenge=" + challenge,
+        },
+        props: {},
+      };
+    }
+
+    const challengeTokenSettings = await getChallengeTokenSettings(challenge);
+    if (
+      challengeTokenSettings &&
+      challengeTokenSettings.game === "world-guesser"
+    ) {
+      const settings = challengeTokenSettings.settings as WorldGuesserSettings;
+      return {
+        props: {
+          settings,
+          isChallenge: true,
+          challengeToken: challenge,
+        },
+      };
+    }
+  }
+
+  let time = 5;
+  const timeString = ctx.query.time;
+  if (timeString && typeof timeString === "string") {
+    const value = parseInt(timeString);
+    if (!isNaN(value)) time = value;
+  }
+
+  let showCountryBorders = false;
+  const showBordersString = ctx.query.showBorders;
+  if (showBordersString && typeof showBordersString === "string") {
+    const value = showBordersString === "true";
+    showCountryBorders = value;
+  }
+
+  return {
+    props: {
+      settings: {
+        time,
+        showCountryBorders,
+      },
+      isChallenge: false,
+    },
+  };
 };
 
 export default GamePage;

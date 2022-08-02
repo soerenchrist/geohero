@@ -1,16 +1,12 @@
 import type { GetServerSideProps, NextPage } from "next";
 import { useRouter } from "next/router";
-import { useState } from "react";
-import { Button } from "../components/common/button";
 import Card from "../components/common/card";
 import Container from "../components/common/container";
 import Meta from "../components/common/meta";
 import Title from "../components/common/title";
-import HowToPlay from "../components/howToPlay";
 import { getUserToken } from "../server/util/getUserToken";
 
 const Home: NextPage = () => {
-  const [showHowTo, setShowHowTo] = useState(false);
   const router = useRouter();
   return (
     <>
@@ -32,22 +28,6 @@ const Home: NextPage = () => {
               Name all the countries you know!
             </Card>
           </div>
-          <div className="flex flex-col lg:flex-row gap-4">
-            <Button
-              variant="primary"
-              onClick={() => router.push("/country-search/start")}
-            >
-              Start game
-            </Button>
-            <Button
-              className="!w-16"
-              variant="secondary"
-              onClick={() => setShowHowTo(!showHowTo)}
-            >
-              ?
-            </Button>
-          </div>
-          <HowToPlay show={showHowTo} />
         </div>
       </Container>
     </>

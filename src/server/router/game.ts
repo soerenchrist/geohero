@@ -95,6 +95,7 @@ export const gameRouter = createRouter()
     input: ChallengeTokenSchema,
     async resolve({ input }) {
       await registerChallengeToken(input);
+      return input.token;
     },
   })
   .mutation("save-user-result", {
