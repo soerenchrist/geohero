@@ -1,11 +1,11 @@
 import { GetServerSideProps, NextPage } from "next";
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Container from "../../components/common/container";
 import Meta from "../../components/common/meta";
-import CorrectCountriesDisplay from "../../components/game/correctCountriesDisplay";
-import CountrySearchField from "../../components/game/countrySearchField";
-import GameFinishedScreen from "../../components/game/gameFinishedScreen";
+import CorrectCountriesDisplay from "../../components/country-search/correctCountriesDisplay";
+import CountrySearchField from "../../components/common/countrySearchField";
+import GameFinishedScreen from "../../components/country-search/gameFinishedScreen";
 import { useGameStats } from "../../hooks/useGameStats";
 import { useUsername } from "../../hooks/useUsername";
 import {
@@ -100,6 +100,7 @@ const GamePage: NextPage<{
         challengeToken,
         timeInMillis: durationMillis,
         date: new Date().toISOString(),
+        game: "country-search",
         name,
         guesses: guesses + 1, // last guess is not updated yet
       });

@@ -1,4 +1,5 @@
 import { GetServerSideProps, NextPage } from "next";
+import { getChallengeTokenSettings } from "../../server/data/dynamo";
 import { getUserToken } from "../../server/util/getUserToken";
 
 const ChallengePage: NextPage = () => {
@@ -10,9 +11,19 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
 
   const { token } = ctx.query;
   if (token && typeof token === "string") {
+    const settings = await getChallengeTokenSettings(token);
+    if (!settings) {
+      return {
+        redirect: {
+          destination: "/",
+          permanent: false,
+        },
+        props: {},
+      };
+    }
     return {
       redirect: {
-        destination: "/country-search/name?challenge=" + token,
+        destination: `/name?game=${settings.game}&challenge=${token}`,
         permanent: false,
       },
       props: {},

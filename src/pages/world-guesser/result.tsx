@@ -1,29 +1,25 @@
 import { GetServerSideProps, NextPage } from "next";
 import Container from "../../components/common/container";
 import Meta from "../../components/common/meta";
-import GameFinishedScreen from "../../components/country-search/gameFinishedScreen";
+import GameFinishedScreen from "../../components/world-guesser/gameFinishedScreen";
 import { getUserResult } from "../../server/data/dynamo";
 import { getUserToken } from "../../server/util/getUserToken";
 
 const GameResultPage: NextPage<{
-  guesses: number;
+  correctCountries: number;
   timeInMillis: number;
   date: Date;
   challenge: string;
-}> = ({ guesses, timeInMillis, challenge }) => {
+}> = ({ correctCountries, timeInMillis, challenge }) => {
   return (
     <>
       <Meta />
       <Container>
         <GameFinishedScreen
-          show={true}
-          showCountries={false}
-          countries={[]}
-          isChallenge={true}
+          correctCount={correctCountries}
+          isChallenge={Boolean(challenge)}
           challengeToken={challenge}
-          guesses={guesses}
-          rounds={5}
-          elapsedSeconds={Math.round(timeInMillis / 1000)}
+          time={Math.round(timeInMillis / 1000)}
         />
       </Container>
     </>
@@ -53,7 +49,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   return {
     props: {
       challenge: challenge,
-      guesses: result.guesses,
+      correctCountries: result.guesses,
       timeInMillis: result.timeInMillis,
       date: result.date,
     },

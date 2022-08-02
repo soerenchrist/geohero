@@ -4,8 +4,7 @@ import { useRef, useState } from "react";
 import { Button } from "../../components/common/button";
 import Container from "../../components/common/container";
 import Meta from "../../components/common/meta";
-import CountrySearchField from "../../components/game/countrySearchField";
-import MissingCountriesList from "../../components/world/missingCountriesList";
+import CountrySearchField from "../../components/common/countrySearchField";
 import { useCountdown } from "../../hooks/useGameStats";
 import {
   getChallengeTokenSettings,
@@ -15,6 +14,9 @@ import { Country } from "../../server/types/country";
 import { WorldGuesserSettings } from "../../server/types/settings";
 import { getUserToken } from "../../server/util/getUserToken";
 import { formatTime } from "../../utils/timeUtil";
+import GameFinishedScreen from "../../components/world-guesser/gameFinishedScreen";
+import { trpc } from "../../utils/trpc";
+import { useUsername } from "../../hooks/useUsername";
 
 const Map = dynamic(() => import("../../components/maps/worldGuesserMap"), {
   ssr: false,
@@ -23,13 +25,34 @@ const Map = dynamic(() => import("../../components/maps/worldGuesserMap"), {
 const GamePage: NextPage<{
   settings: WorldGuesserSettings;
   isChallenge: boolean;
-}> = ({ settings, isChallenge }) => {
+  challengeToken?: string;
+}> = ({ settings, isChallenge, challengeToken }) => {
+  const { name } = useUsername();
   const unguessedRef = useRef(Array.from(Array(198).keys()));
   const [guessedCountries, setGuessedCountries] = useState<Country[]>([]);
-  const [message, setMessage] = useState<string>();
-  const { remainingSeconds, stop } = useCountdown(settings.time * 60);
-  const [gameRunning, setGameRunning] = useState(true);
 
+  const { mutate: saveUserResult } = trpc.useMutation("game.save-user-result");
+  const [message, setMessage] = useState<string>();
+
+  const finishGame = (durationMillis: number) => {
+    if (isChallenge && challengeToken) {
+      saveUserResult({
+        challengeToken,
+        date: new Date().toISOString(),
+        guesses: guessedCountries.length,
+        game: "world-guesser",
+        timeInMillis: durationMillis,
+        name,
+      });
+    }
+    setGameRunning(false);
+  };
+
+  const { remainingSeconds, stop } = useCountdown(
+    settings.time * 60,
+    finishGame
+  );
+  const [gameRunning, setGameRunning] = useState(true);
   const handleGuess = (country: Country) => {
     // Guess is correct
     if (unguessedRef.current.includes(country.index)) {
@@ -44,10 +67,10 @@ const GamePage: NextPage<{
       setMessage("Already guessed");
       setTimeout(() => setMessage(undefined), 500);
     }
-  };
 
-  const giveUp = () => {
-    setGameRunning(false);
+    if (unguessedRef.current.length === 0) {
+      stop();
+    }
   };
 
   return (
@@ -55,7 +78,12 @@ const GamePage: NextPage<{
       <Meta></Meta>
       <Container>
         {!gameRunning && (
-          <MissingCountriesList indices={unguessedRef.current} />
+          <GameFinishedScreen
+            correctCount={guessedCountries.length}
+            isChallenge={isChallenge}
+            time={settings.time * 60 - remainingSeconds}
+            challengeToken={challengeToken}
+          />
         )}
         {gameRunning && (
           <div className="flex flex-col w-screen min-h-screen items-center gap-8">
@@ -79,7 +107,7 @@ const GamePage: NextPage<{
             </div>
             <CountrySearchField onCountryInput={handleGuess} />
 
-            <Button onClick={() => giveUp()}>Give up</Button>
+            <Button onClick={() => stop()}>Give up</Button>
           </div>
         )}
       </Container>

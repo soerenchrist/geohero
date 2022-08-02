@@ -36,7 +36,10 @@ export const useGameStats = () => {
   return { elapsedSeconds, stop, guesses, addGuess, startTime };
 };
 
-export const useCountdown = (seconds: number) => {
+export const useCountdown = (
+  seconds: number,
+  callback: (durationMillis: number) => void
+) => {
   const [remainingSeconds, setRemainingSeconds] = useState(seconds);
 
   const startTime = useRef<Date>();
@@ -46,7 +49,10 @@ export const useCountdown = (seconds: number) => {
     if (timer.current) {
       clearInterval(timer.current);
     }
-  }, []);
+
+    const durationMillis = new Date().getTime() - startTime.current!.getTime();
+    callback(durationMillis);
+  }, [callback]);
 
   useEffect(() => {
     startTime.current = new Date();
@@ -61,6 +67,12 @@ export const useCountdown = (seconds: number) => {
       clearInterval(timer.current);
     };
   }, [seconds]);
+
+  useEffect(() => {
+    if (remainingSeconds <= 0) {
+      stop();
+    }
+  }, [remainingSeconds, callback, stop]);
 
   return { remainingSeconds, stop };
 };

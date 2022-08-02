@@ -9,6 +9,7 @@ import {
   UserResultSchema,
   saveUserResult,
   getLeaderboard,
+  getChallengeTokenSettings,
 } from "../data/dynamo";
 import { s3Client } from "../data/s3";
 import { createRouter } from "./context";
@@ -83,10 +84,11 @@ export const gameRouter = createRouter()
   })
   .query("get-leader-board", {
     input: z.object({
-      challenge: z.string()
+      challenge: z.string(),
+      orderDesc: z.boolean()
     }),
     async resolve({ input }) {
-      const board = await getLeaderboard(input.challenge);
+      const board = await getLeaderboard(input.challenge, input.orderDesc);
 
       return board;
     }

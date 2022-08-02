@@ -7,6 +7,8 @@ import {
   WorldGuesserSettingsSchema,
 } from "../types/settings";
 
+const games = ["world-guesser", "country-search"] as const;
+
 const client = new AWS.DynamoDB({
   region: process.env.AWS_GEOHERO_REGION,
   credentials: {
@@ -50,7 +52,7 @@ export const getCountryByName = async (name: string) => {
 
 export const ChallengeTokenSchema = z.object({
   token: z.string().min(5),
-  game: z.enum(["world-guesser", "country-search"]),
+  game: z.enum(games),
   settings: z.union([WorldGuesserSettingsSchema, CountrySearchSettingsSchema]),
 });
 
@@ -89,6 +91,7 @@ export const UserResultSchema = z.object({
   challengeToken: z.string(),
   timeInMillis: z.number().min(0),
   guesses: z.number().min(0),
+  game: z.enum(games),
   date: z.string(),
   name: z.string().optional(),
   timeDetails: z.map(z.string(), z.number()).optional(),
@@ -103,7 +106,9 @@ const createSortableKey = (time: number) => {
 };
 
 export const saveUserResult = async (result: UserResult) => {
-  const sortableKey = createSortableKey(result.timeInMillis);
+  const sortableKey = createSortableKey(
+    result.game == "country-search" ? result.timeInMillis : result.guesses
+  );
   const item = {
     pk: "CHALLENGE#" + result.challengeToken,
     sk: `USER#${result.userToken}`,
@@ -132,10 +137,11 @@ export const getUserResult = async (challenge: string, user: string) => {
   return null;
 };
 
-export const getLeaderboard = async (challenge: string) => {
+export const getLeaderboard = async (challenge: string, orderDesc: boolean) => {
   const result = await documentClient.query({
     KeyConditionExpression: "#pk = :pk AND begins_with(#sk, :sk)",
     IndexName: "gsi1",
+    ScanIndexForward: !orderDesc,
     TableName: process.env.DYNAMO_TABLE_NAME,
     ExpressionAttributeNames: {
       "#pk": "gsi1pk",

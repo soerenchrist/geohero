@@ -42,7 +42,7 @@ const GameFinishedScreen: React.FC<{
         {isChallenge ? (
           <Button
             onClick={() =>
-              router.push(`/country-search/leaderboard?challenge=${challengeToken}`)
+              router.push(`/leaderboard?challenge=${challengeToken}`)
             }
           >
             Show Leaderboard
