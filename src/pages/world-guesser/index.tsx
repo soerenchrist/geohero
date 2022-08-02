@@ -6,7 +6,7 @@ import Container from "../../components/common/container";
 import Meta from "../../components/common/meta";
 import CountrySearchField from "../../components/game/countrySearchField";
 import MissingCountriesList from "../../components/world/missingCountriesList";
-import { useGameStats } from "../../hooks/useGameStats";
+import { useCountdown } from "../../hooks/useGameStats";
 import {
   getChallengeTokenSettings,
   getUserResult,
@@ -14,6 +14,7 @@ import {
 import { Country } from "../../server/types/country";
 import { WorldGuesserSettings } from "../../server/types/settings";
 import { getUserToken } from "../../server/util/getUserToken";
+import { formatTime } from "../../utils/timeUtil";
 
 const Map = dynamic(() => import("../../components/maps/worldGuesserMap"), {
   ssr: false,
@@ -26,7 +27,7 @@ const GamePage: NextPage<{
   const unguessedRef = useRef(Array.from(Array(198).keys()));
   const [guessedCountries, setGuessedCountries] = useState<Country[]>([]);
   const [message, setMessage] = useState<string>();
-  const { elapsedSeconds, stop } = useGameStats();
+  const { remainingSeconds, stop } = useCountdown(settings.time * 60);
   const [gameRunning, setGameRunning] = useState(true);
 
   const handleGuess = (country: Country) => {
@@ -66,7 +67,7 @@ const GamePage: NextPage<{
 
               <div className="absolute top-0 text-right right-0 p-2 text-lg font-bold bg-white m-2 rounded-lg">
                 <div>{guessedCountries.length} / 198</div>
-                <div>{elapsedSeconds} s</div>
+                <div>{formatTime(remainingSeconds)}</div>
               </div>
               <div className="absolute top-0 left-0 w-screen lg:h-96 h-72 pointer-events-none flex justify-center items-center flex-col text-center">
                 {message && (

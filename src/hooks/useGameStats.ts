@@ -35,3 +35,32 @@ export const useGameStats = () => {
 
   return { elapsedSeconds, stop, guesses, addGuess, startTime };
 };
+
+export const useCountdown = (seconds: number) => {
+  const [remainingSeconds, setRemainingSeconds] = useState(seconds);
+
+  const startTime = useRef<Date>();
+  const timer = useRef<NodeJS.Timer>();
+
+  const stop = useCallback(() => {
+    if (timer.current) {
+      clearInterval(timer.current);
+    }
+  }, []);
+
+  useEffect(() => {
+    startTime.current = new Date();
+    timer.current = setInterval(() => {
+      const elapsed = Math.floor(
+        (new Date().getTime() - startTime.current!.getTime()) / 1000
+      );
+      setRemainingSeconds(seconds - elapsed);
+    }, 500);
+
+    return () => {
+      clearInterval(timer.current);
+    };
+  }, [seconds]);
+
+  return { remainingSeconds, stop };
+};
