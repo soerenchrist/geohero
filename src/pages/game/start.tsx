@@ -143,7 +143,7 @@ const StartPage: NextPage = () => {
           <button
             disabled={isLoading}
             className="bg-transparent text-white mt-8 -mb-4 hover:scale-105 font-medium"
-            onClick={() => settings.reset}
+            onClick={() => settings.reset()}
           >
             Reset values
           </button>

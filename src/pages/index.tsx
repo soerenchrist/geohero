@@ -25,7 +25,7 @@ const Home: NextPage = () => {
               Start game
             </Button>
             <Button
-              className="w-16"
+              className="!w-16"
               variant="secondary"
               onClick={() => setShowHowTo(!showHowTo)}
             >
