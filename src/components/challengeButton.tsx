@@ -3,6 +3,7 @@ import { trpc } from "../utils/trpc";
 import { Button } from "./common/button";
 import CopyIcon from "./icons/copy";
 import toast, { Toaster } from "react-hot-toast";
+import { useRouter } from "next/router";
 const baseUrl = "https://geohero.soerenchrist.de/challenge/";
 const ChallengeButton: React.FC<{
   onTokenGenerate: (token: string) => void;
@@ -18,9 +19,9 @@ const ChallengeButton: React.FC<{
 
   const handleCopy = async () => {
     if (data) {
-      await navigator.clipboard.writeText(baseUrl + data.token);
+      await navigator.clipboard.writeText(window.location.origin + data.token);
       toast("Url copied to clipboard", {
-        duration: 1000
+        duration: 1000,
       });
     }
   };
@@ -33,7 +34,7 @@ const ChallengeButton: React.FC<{
           <input
             className="w-96 px-4 font-medium disabled:bg-gray-100 placeholder:text-gray-400 text-sm text-center h-12 rounded-l-full"
             disabled
-            value={`${baseUrl}${data.token}`}
+            value={`${window.location.origin}${data.token}`}
           ></input>
           <button
             onClick={handleCopy}

@@ -16,7 +16,7 @@ const StartPage: NextPage = () => {
   const [token, setToken] = useState<string>();
   const { settings, setSettingValue, saveSettings, url, reset } =
     useGameSettings("country-search", WorldGuesserSettingsSchema, {
-      time: 5,
+      time: 8,
       showCountryBorders: true,
       showMissingCountries: false,
     });
@@ -45,6 +45,7 @@ const StartPage: NextPage = () => {
             label="Time in Minutes"
             value={settings.time}
             min={1}
+            max={20}
             onChange={(e) => setSettingValue("time", e)}
           />
 

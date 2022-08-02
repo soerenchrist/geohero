@@ -1,15 +1,13 @@
 import { LatLngExpression } from "leaflet";
 import { useMemo } from "react";
-import { MapContainer, Marker, TileLayer, Tooltip } from "react-leaflet";
+import { Circle, MapContainer, Marker, TileLayer, Tooltip } from "react-leaflet";
 import { Country } from "../../server/types/country";
 import {
   attribution,
   borderLayerUrl,
   layerUrl,
 } from "../../utils/mapConstants";
-import { blueMarker } from "./customMarkers";
 
-const marker = blueMarker;
 
 const CountryMarker: React.FC<{ country: Country }> = ({ country }) => {
   const position = useMemo<LatLngExpression>(
@@ -17,9 +15,9 @@ const CountryMarker: React.FC<{ country: Country }> = ({ country }) => {
     [country]
   );
   return (
-    <Marker icon={marker} position={position}>
+    <Circle radius={70000} center={position}>
       <Tooltip>{country.name}</Tooltip>
-    </Marker>
+    </Circle>
   );
 };
 
