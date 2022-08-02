@@ -94,6 +94,7 @@ const GamePage: NextPage<{
           <GameFinishedScreen
             correctCount={guessedCountries.length}
             isChallenge={isChallenge}
+            remainingCountries={remainingCountries}
             time={settings.time * 60 - remainingSeconds}
             challengeToken={challengeToken}
           />

@@ -1,13 +1,22 @@
 import { useRouter } from "next/router";
+import { Country } from "../../server/types/country";
 import { Button } from "../common/button";
 import HomeIcon from "../icons/home";
+import MissingCountriesList from "./missingCountriesList";
 
 const GameFinishedScreen: React.FC<{
   correctCount: number;
   time: number;
   isChallenge: boolean;
   challengeToken?: string;
-}> = ({ correctCount, time, isChallenge, challengeToken }) => {
+  remainingCountries?: Country[];
+}> = ({
+  correctCount,
+  time,
+  isChallenge,
+  challengeToken,
+  remainingCountries,
+}) => {
   const router = useRouter();
   return (
     <div className="flex flex-col items-center pt-20">
@@ -54,6 +63,11 @@ const GameFinishedScreen: React.FC<{
         >
           <HomeIcon className="w-8 h-8 m-auto" />
         </button>
+      </div>
+      <div className="w-full pt-20">
+        {remainingCountries && (
+          <MissingCountriesList countries={remainingCountries} />
+        )}
       </div>
     </div>
   );
