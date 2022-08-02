@@ -1,7 +1,7 @@
 import * as AWS from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocument } from "@aws-sdk/lib-dynamodb";
 import { z } from "zod";
-import { CountrySchema } from "../types/country";
+import { Country, CountrySchema } from "../types/country";
 import {
   CountrySearchSettingsSchema,
   WorldGuesserSettingsSchema,
@@ -32,6 +32,27 @@ export const getCountryByIndex = async (index: number) => {
   if (result.Items?.length !== 1) return null;
   const country = CountrySchema.parse(result.Items[0]);
   return country;
+};
+
+export const getAllCountries = async () => {
+  const result = await documentClient.query({
+    TableName: process.env.DYNAMO_TABLE_NAME,
+    KeyConditionExpression: "pk = :pk",
+    ExpressionAttributeValues: {
+      ":pk": "COUNTRY",
+    },
+  });
+
+  if (result.Items) {
+    const countries: Country[] = [];
+    result.Items.forEach(x => {
+      const country = CountrySchema.parse(x);
+      countries.push(country);
+    })
+    return countries;
+  }
+
+  return null;
 };
 
 export const getCountryByName = async (name: string) => {

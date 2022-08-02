@@ -1,6 +1,6 @@
 import { GetServerSideProps, NextPage } from "next";
 import dynamic from "next/dynamic";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Button } from "../../components/common/button";
 import Container from "../../components/common/container";
 import Meta from "../../components/common/meta";
@@ -28,7 +28,9 @@ const GamePage: NextPage<{
   challengeToken?: string;
 }> = ({ settings, isChallenge, challengeToken }) => {
   const { name } = useUsername();
-  const unguessedRef = useRef(Array.from(Array(198).keys()));
+  const [unguessedCountries, setUnguessedCountries] = useState(
+    Array.from(Array(198).keys())
+  );
   const [guessedCountries, setGuessedCountries] = useState<Country[]>([]);
 
   const { mutate: saveUserResult } = trpc.useMutation("game.save-user-result");
@@ -47,18 +49,29 @@ const GamePage: NextPage<{
     }
     setGameRunning(false);
   };
+  const { data: allCountries } = trpc.useQuery(["game.get-all-countries"], {
+    refetchOnWindowFocus: false,
+    retry: false,
+    enabled: settings.showMissingCountries,
+  });
 
   const { remainingSeconds, stop } = useCountdown(
     settings.time * 60,
     finishGame
   );
+
+  const remainingCountries = useMemo(
+    () => allCountries?.filter((x) => unguessedCountries.includes(x.index)),
+    [allCountries, unguessedCountries]
+  );
+
   const [gameRunning, setGameRunning] = useState(true);
   const handleGuess = (country: Country) => {
     // Guess is correct
-    if (unguessedRef.current.includes(country.index)) {
+    if (unguessedCountries.includes(country.index)) {
       setGuessedCountries([...guessedCountries, country]);
-      unguessedRef.current = unguessedRef.current.filter(
-        (x) => x !== country.index
+      setUnguessedCountries(
+        unguessedCountries.filter((x) => x !== country.index)
       );
 
       setMessage("Correct!");
@@ -68,7 +81,7 @@ const GamePage: NextPage<{
       setTimeout(() => setMessage(undefined), 500);
     }
 
-    if (unguessedRef.current.length === 0) {
+    if (unguessedCountries.length === 0) {
       stop();
     }
   };
@@ -91,6 +104,8 @@ const GamePage: NextPage<{
               <Map
                 showCountryBorders={settings.showCountryBorders}
                 guessedCountries={guessedCountries}
+                showMissingCountries={settings.showMissingCountries}
+                allCountries={remainingCountries}
               />
 
               <div className="absolute top-0 text-right right-0 p-2 text-lg font-bold bg-white m-2 rounded-lg">
@@ -145,18 +160,27 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     }
   }
 
-  let time = 5;
+  let time = 8;
   const timeString = ctx.query.time;
   if (timeString && typeof timeString === "string") {
     const value = parseInt(timeString);
     if (!isNaN(value)) time = value;
   }
 
-  let showCountryBorders = false;
+  let showCountryBorders = true;
   const showBordersString = ctx.query.showBorders;
   if (showBordersString && typeof showBordersString === "string") {
     const value = showBordersString === "true";
     showCountryBorders = value;
+  }
+
+  let showMissingCountries = false;
+  const showMissingCountriesString = ctx.query.showMissingCountries;
+  if (
+    showMissingCountriesString &&
+    typeof showMissingCountriesString === "string"
+  ) {
+    showMissingCountries = showMissingCountriesString === "true";
   }
 
   return {
@@ -164,6 +188,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
       settings: {
         time,
         showCountryBorders,
+        showMissingCountries,
       },
       isChallenge: false,
     },

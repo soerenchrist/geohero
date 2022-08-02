@@ -9,13 +9,13 @@ import {
   UserResultSchema,
   saveUserResult,
   getLeaderboard,
-  getChallengeTokenSettings,
+  getAllCountries,
 } from "../data/dynamo";
 import { s3Client } from "../data/s3";
 import { createRouter } from "./context";
 import { nanoid } from "nanoid";
-import { generateDistinctNumbers } from "../../utils/randomUtil";
 import { TRPCError } from "@trpc/server";
+import { Country } from "../types/country";
 
 export const gameRouter = createRouter()
   .query("get-country-by-index", {
@@ -26,6 +26,11 @@ export const gameRouter = createRouter()
       const country = await getCountryByIndex(input.index);
       return country;
     },
+  })
+  .query("get-all-countries", {
+    async resolve() {
+      return await getAllCountries();
+    }
   })
   .query("check-country-by-name", {
     input: z.object({
@@ -85,13 +90,13 @@ export const gameRouter = createRouter()
   .query("get-leader-board", {
     input: z.object({
       challenge: z.string(),
-      orderDesc: z.boolean()
+      orderDesc: z.boolean(),
     }),
     async resolve({ input }) {
       const board = await getLeaderboard(input.challenge, input.orderDesc);
 
       return board;
-    }
+    },
   })
   .mutation("register-token", {
     input: ChallengeTokenSchema,

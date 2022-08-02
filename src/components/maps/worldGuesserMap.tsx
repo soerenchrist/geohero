@@ -1,6 +1,12 @@
 import { LatLngExpression } from "leaflet";
 import { useMemo } from "react";
-import { Circle, MapContainer, Marker, TileLayer, Tooltip } from "react-leaflet";
+import {
+  Circle,
+  MapContainer,
+  Marker,
+  TileLayer,
+  Tooltip,
+} from "react-leaflet";
 import { Country } from "../../server/types/country";
 import {
   attribution,
@@ -8,14 +14,16 @@ import {
   layerUrl,
 } from "../../utils/mapConstants";
 
-
-const CountryMarker: React.FC<{ country: Country }> = ({ country }) => {
+const CountryMarker: React.FC<{ country: Country; found: boolean }> = ({
+  country,
+  found,
+}) => {
   const position = useMemo<LatLngExpression>(
     () => [country.latitude, country.longitude],
     [country]
   );
   return (
-    <Circle radius={70000} center={position}>
+    <Circle radius={70000} color={found ? "green" : "red"} center={position}>
       <Tooltip>{country.name}</Tooltip>
     </Circle>
   );
@@ -24,7 +32,14 @@ const CountryMarker: React.FC<{ country: Country }> = ({ country }) => {
 const WorldGuesserMap: React.FC<{
   guessedCountries: Country[];
   showCountryBorders: boolean;
-}> = ({ guessedCountries, showCountryBorders }) => {
+  allCountries?: Country[] | null;
+  showMissingCountries: boolean;
+}> = ({
+  guessedCountries,
+  showCountryBorders,
+  showMissingCountries,
+  allCountries,
+}) => {
   return (
     <MapContainer
       className="h-144 z-0"
@@ -43,8 +58,12 @@ const WorldGuesserMap: React.FC<{
         />
       )}
       {guessedCountries.map((country) => (
-        <CountryMarker key={country.index} country={country} />
+        <CountryMarker key={country.index} found={true} country={country} />
       ))}
+      {showMissingCountries &&
+        allCountries?.map((country) => (
+          <CountryMarker key={country.index} found={false} country={country} />
+        ))}
     </MapContainer>
   );
 };
