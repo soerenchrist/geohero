@@ -1,12 +1,15 @@
 import type { GetServerSideProps, NextPage } from "next";
 import { useRouter } from "next/router";
+import { useState } from "react";
 import { Button } from "../components/common/button";
 import Container from "../components/common/container";
 import Meta from "../components/common/meta";
 import Title from "../components/common/title";
+import HowToPlay from "../components/howToPlay";
 import { getUserToken } from "../server/util/getUserToken";
 
 const Home: NextPage = () => {
+  const [showHowTo, setShowHowTo] = useState(false);
   const router = useRouter();
   return (
     <>
@@ -21,8 +24,15 @@ const Home: NextPage = () => {
             >
               Start game
             </Button>
-            <Button variant="secondary">How to play?</Button>
+            <Button
+              className="w-16"
+              variant="secondary"
+              onClick={() => setShowHowTo(!showHowTo)}
+            >
+              ?
+            </Button>
           </div>
+          <HowToPlay show={showHowTo} />
         </div>
       </Container>
     </>

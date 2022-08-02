@@ -6,6 +6,7 @@ import Meta from "../../components/common/meta";
 import CorrectCountriesDisplay from "../../components/game/correctCountriesDisplay";
 import CountrySearchField from "../../components/game/countrySearchField";
 import GameFinishedScreen from "../../components/game/gameFinishedScreen";
+import { useGameStats } from "../../hooks/useGameStats";
 import { useUsername } from "../../hooks/useUsername";
 import {
   getChallengeTokenSettings,
@@ -21,42 +22,6 @@ import { trpc } from "../../utils/trpc";
 const Map = dynamic(() => import("../../components/maps/gameMap"), {
   ssr: false,
 });
-
-const useGameStats = () => {
-  const [elapsedSeconds, setElapsedSeconds] = useState(0);
-  const [guesses, setGuesses] = useState(0);
-  const startTime = useRef<Date>();
-  const timer = useRef<NodeJS.Timer>();
-
-  const stop = useCallback(() => {
-    if (timer.current) {
-      clearInterval(timer.current);
-    }
-  }, []);
-
-  const addGuess = useCallback(() => {
-    setGuesses(guesses + 1);
-  }, [guesses, setGuesses]);
-
-  useEffect(() => {
-    startTime.current = new Date();
-    timer.current = setInterval(
-      () =>
-        setElapsedSeconds(
-          Math.floor(
-            (new Date().getTime() - startTime.current!.getTime()) / 1000
-          )
-        ),
-      500
-    );
-
-    return () => {
-      clearInterval(timer.current);
-    };
-  }, []);
-
-  return { elapsedSeconds, stop, guesses, addGuess, startTime };
-};
 
 const useCountryShape = (iso?: string) => {
   const [shapeData, setShapeData] = useState<GeoJson>();
