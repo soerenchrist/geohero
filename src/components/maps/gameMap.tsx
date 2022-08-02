@@ -6,7 +6,7 @@ import {
   Tooltip,
   useMap,
 } from "react-leaflet";
-import { type GameSettings } from "../../pages/game";
+import { type GameSettings } from "../../pages/country-search";
 import { type GeoJson } from "../../server/types/geojson";
 import { type GuessState } from "../../utils/coordinateUtil";
 import {

@@ -193,7 +193,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     if (result) {
       return {
         redirect: {
-          destination: "/game/result?challenge=" + challenge,
+          destination: "/country-search/result?challenge=" + challenge,
         },
         props: {},
       };

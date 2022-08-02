@@ -14,7 +14,7 @@ const NamePage: NextPage = () => {
     const query = router.query;
     saveName();
 
-    router.push(`/game?challenge=${query.challenge}`);
+    router.push(`/country-search?challenge=${query.challenge}`);
   };
 
   return (

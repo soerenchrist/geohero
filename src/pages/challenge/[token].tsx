@@ -12,7 +12,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   if (token && typeof token === "string") {
     return {
       redirect: {
-        destination: "/game/name?challenge=" + token,
+        destination: "/country-search/name?challenge=" + token,
         permanent: false,
       },
       props: {},

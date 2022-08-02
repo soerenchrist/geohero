@@ -2,6 +2,7 @@ import type { GetServerSideProps, NextPage } from "next";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { Button } from "../components/common/button";
+import Card from "../components/common/card";
 import Container from "../components/common/container";
 import Meta from "../components/common/meta";
 import Title from "../components/common/title";
@@ -17,10 +18,24 @@ const Home: NextPage = () => {
       <Container>
         <div className="flex flex-col w-full h-screen justify-start pt-24 lg:pt-0 lg:justify-center gap-8 items-center">
           <Title />
+          <div className="grid grid-cols-1 lg:grid-cols-2 max-w-lg gap-4">
+            <Card
+              title="Country Search"
+              onClick={() => router.push("/country-search/start")}
+            >
+              Try to find the searched countries as fast as possible!
+            </Card>
+            <Card
+              title="World Guesser"
+              onClick={() => router.push("/world-guesser/start")}
+            >
+              Name all the countries you know!
+            </Card>
+          </div>
           <div className="flex flex-col lg:flex-row gap-4">
             <Button
               variant="primary"
-              onClick={() => router.push("/game/start")}
+              onClick={() => router.push("/country-search/start")}
             >
               Start game
             </Button>

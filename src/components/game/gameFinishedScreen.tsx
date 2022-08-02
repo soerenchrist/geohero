@@ -42,13 +42,13 @@ const GameFinishedScreen: React.FC<{
         {isChallenge ? (
           <Button
             onClick={() =>
-              router.push(`/game/leaderboard?challenge=${challengeToken}`)
+              router.push(`/country-search/leaderboard?challenge=${challengeToken}`)
             }
           >
             Show Leaderboard
           </Button>
         ) : (
-          <Button onClick={() => router.push("/game/start")}>Play again</Button>
+          <Button onClick={() => router.push("/country-search/start")}>Play again</Button>
         )}
         <button
           onClick={() => router.push("/")}
