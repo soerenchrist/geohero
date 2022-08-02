@@ -14,6 +14,7 @@ import {
 } from "../../server/data/dynamo";
 import { Country } from "../../server/types/country";
 import { type GeoJson } from "../../server/types/geojson";
+import { type CountrySearchSettings } from "../../server/types/settings";
 import { getUserToken } from "../../server/util/getUserToken";
 import { checkGuess, type GuessState } from "../../utils/coordinateUtil";
 import { generateDistinctNumbers } from "../../utils/randomUtil";
@@ -67,19 +68,11 @@ const useCountryData = (countryIndex?: number) => {
   );
 };
 
-export type GameSettings = {
-  rounds: number;
-  showDirection: boolean;
-  showBorders: boolean;
-  showPercentage: boolean;
-};
-
 const GamePage: NextPage<{
-  countryIndices: number[];
-  settings: GameSettings;
+  settings: CountrySearchSettings;
   isChallenge: boolean;
   challengeToken: string;
-}> = ({ countryIndices, settings, isChallenge, challengeToken }) => {
+}> = ({ settings, isChallenge, challengeToken }) => {
   const { name } = useUsername();
   const [gameWon, setGameWon] = useState(false);
   const [correctGuesses, setCorrectGuesses] = useState<Country[]>([]);
@@ -88,8 +81,8 @@ const GamePage: NextPage<{
   const [currentRound, setCurrentRound] = useState(0);
   const [guessState, setGuessState] = useState<GuessState>();
   const currentCountryIndex = useMemo(
-    () => countryIndices[currentRound],
-    [countryIndices, currentRound]
+    () => settings.countryIndices[currentRound],
+    [settings, currentRound]
   );
   const { mutate: saveUserResult } = trpc.useMutation("game.save-user-result");
   const { shapeData } = useCountryShape(currentGuess?.iso);
@@ -103,7 +96,6 @@ const GamePage: NextPage<{
     stop();
 
     if (isChallenge && challengeToken) {
-      
       saveUserResult({
         challengeToken,
         timeInMillis: durationMillis,
@@ -199,17 +191,15 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
       };
     }
 
-    const settings = await getChallengeTokenSettings(challenge);
-    if (settings) {
+    const challengeTokenSettings = await getChallengeTokenSettings(challenge);
+    if (
+      challengeTokenSettings &&
+      challengeTokenSettings.game === "country-search"
+    ) {
+      const settings = challengeTokenSettings.settings as CountrySearchSettings;
       return {
         props: {
-          countryIndices: settings.countryIds,
-          settings: {
-            rounds: settings.rounds,
-            showDirection: settings.showDirections,
-            showBorders: settings.showCountryBorders,
-            showPercentage: settings.showPercentage,
-          },
+          settings,
           isChallenge: true,
           challengeToken: challenge,
         },

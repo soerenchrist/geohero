@@ -1,7 +1,6 @@
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useState } from "react";
-import { z } from "zod";
 import ChallengeButton from "../../components/challengeButton";
 import { Button } from "../../components/common/button";
 import Checkbox from "../../components/common/checkbox";
@@ -9,26 +8,20 @@ import Container from "../../components/common/container";
 import Meta from "../../components/common/meta";
 import Spinner from "../../components/common/spinner";
 import Title from "../../components/common/title";
-import {
-  useGameSettings,
-} from "../../hooks/useSettings";
+import { useGameSettings } from "../../hooks/useSettings";
+import { CountrySearchSettingsSchema } from "../../server/types/settings";
+import { generateDistinctNumbers } from "../../utils/randomUtil";
 import { trpc } from "../../utils/trpc";
-
-const settingsSchema = z.object({
-  rounds: z.number().min(3).max(10),
-  showCountryBorders: z.boolean(),
-  showDirections: z.boolean(),
-  showPercentage: z.boolean(),
-});
 
 const StartPage: NextPage = () => {
   const [token, setToken] = useState<string>();
   const { settings, setSettingValue, saveSettings, url, reset } =
-    useGameSettings("country-search", settingsSchema, {
+    useGameSettings("country-search", CountrySearchSettingsSchema, {
       rounds: 5,
       showCountryBorders: false,
       showDirections: true,
       showPercentage: false,
+      countryIndices: [] as number[],
     });
   const { mutate: registerToken, isLoading } = trpc.useMutation(
     "game.register-token",
@@ -44,9 +37,12 @@ const StartPage: NextPage = () => {
     if (!token) {
       router.push("/country-search?" + url);
     } else {
+      const countryIds = generateDistinctNumbers(settings.rounds, 0, 198);
+      settings.countryIndices = countryIds;
       registerToken({
-        ...settings,
         token,
+        game: "country-search",
+        settings,
       });
     }
   };

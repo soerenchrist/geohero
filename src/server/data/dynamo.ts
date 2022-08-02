@@ -2,6 +2,10 @@ import * as AWS from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocument } from "@aws-sdk/lib-dynamodb";
 import { z } from "zod";
 import { CountrySchema } from "../types/country";
+import {
+  CountrySearchSettingsSchema,
+  WorldGuesserSettingsSchema,
+} from "../types/settings";
 
 const client = new AWS.DynamoDB({
   region: process.env.AWS_GEOHERO_REGION,
@@ -45,19 +49,16 @@ export const getCountryByName = async (name: string) => {
 };
 
 export const ChallengeTokenSchema = z.object({
-  rounds: z.number().min(3).max(10),
-  showCountryBorders: z.boolean(),
-  showDirections: z.boolean(),
-  showPercentage: z.boolean(),
   token: z.string().min(5),
-  countryIds: z.number().array(),
+  game: z.enum(["world-guesser", "country-search"]),
+  settings: z.union([WorldGuesserSettingsSchema, CountrySearchSettingsSchema]),
 });
 
 export type RegisterToken = z.infer<typeof ChallengeTokenSchema>;
 
 export const registerChallengeToken = async (data: RegisterToken) => {
   const item = {
-    pk: "INVITE",
+    pk: "CHALLENGE",
     sk: data.token,
     ...data,
   };
@@ -71,7 +72,7 @@ export const getChallengeTokenSettings = async (token: string) => {
   const result = await documentClient.get({
     TableName: process.env.DYNAMO_TABLE_NAME,
     Key: {
-      pk: "INVITE",
+      pk: "CHALLENGE",
       sk: token,
     },
   });

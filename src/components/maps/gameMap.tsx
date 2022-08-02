@@ -6,8 +6,8 @@ import {
   Tooltip,
   useMap,
 } from "react-leaflet";
-import { type GameSettings } from "../../pages/country-search";
 import { type GeoJson } from "../../server/types/geojson";
+import { CountrySearchSettings } from "../../server/types/settings";
 import { type GuessState } from "../../utils/coordinateUtil";
 import {
   attribution,
@@ -73,7 +73,7 @@ const GameMap: React.FC<{
   geojson?: GeoJson;
   center: Coordinate;
   guessState?: GuessState;
-  settings: GameSettings;
+  settings: CountrySearchSettings;
 }> = ({ geojson, center, guessState, settings }) => {
   return (
     <MapContainer
@@ -85,7 +85,7 @@ const GameMap: React.FC<{
       doubleClickZoom={false}
     >
       <TileLayer attribution={attribution} url={layerUrl} />
-      {settings.showBorders && (
+      {settings.showCountryBorders && (
         <TileLayer
           attribution={attribution}
           url={borderLayerUrl}
@@ -98,7 +98,7 @@ const GameMap: React.FC<{
           key={geojson.properties.ISO_A2}
           data={geojson}
         >
-          {((guessState && settings.showDirection) ||
+          {((guessState && settings.showDirections) ||
             settings.showPercentage) && (
             <Tooltip
               permanent
@@ -110,7 +110,7 @@ const GameMap: React.FC<{
                     {Math.round(guessState.percentage)} %
                   </span>
                 )}
-                {settings.showDirection && guessState && <DirectionIcon guessState={guessState} />}
+                {settings.showDirections && guessState && <DirectionIcon guessState={guessState} />}
               </div>
             </Tooltip>
           )}

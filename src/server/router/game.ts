@@ -92,15 +92,9 @@ export const gameRouter = createRouter()
     }
   })
   .mutation("register-token", {
-    input: ChallengeTokenSchema.omit({
-      countryIds: true,
-    }),
+    input: ChallengeTokenSchema,
     async resolve({ input }) {
-      const countryIds = generateDistinctNumbers(input.rounds, 0, 198);
-      await registerChallengeToken({
-        ...input,
-        countryIds,
-      });
+      await registerChallengeToken(input);
     },
   })
   .mutation("save-user-result", {

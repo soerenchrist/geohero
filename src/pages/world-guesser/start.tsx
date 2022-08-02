@@ -1,7 +1,6 @@
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useState } from "react";
-import { z } from "zod";
 import ChallengeButton from "../../components/challengeButton";
 import { Button } from "../../components/common/button";
 import Checkbox from "../../components/common/checkbox";
@@ -10,18 +9,13 @@ import Meta from "../../components/common/meta";
 import Spinner from "../../components/common/spinner";
 import Title from "../../components/common/title";
 import { useGameSettings } from "../../hooks/useSettings";
+import { WorldGuesserSettingsSchema } from "../../server/types/settings";
 import { trpc } from "../../utils/trpc";
-
-const settingsSchema = z.object({
-  time: z.number().min(1).max(10),
-  showCountryBorders: z.boolean(),
-  showMissingCountries: z.boolean(),
-});
 
 const StartPage: NextPage = () => {
   const [token, setToken] = useState<string>();
   const { settings, setSettingValue, saveSettings, url, reset } =
-    useGameSettings("country-search", settingsSchema, {
+    useGameSettings("country-search", WorldGuesserSettingsSchema, {
       time: 5,
       showCountryBorders: true,
       showMissingCountries: false,
@@ -40,6 +34,12 @@ const StartPage: NextPage = () => {
     saveSettings();
     if (!token) {
       router.push("/world-guesser?" + url);
+    } else {
+      registerToken({
+        token,
+        game: "world-guesser",
+        settings: settings,
+      });
     }
   };
 
