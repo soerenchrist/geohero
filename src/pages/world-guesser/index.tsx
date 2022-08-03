@@ -1,6 +1,6 @@
 import { GetServerSideProps, NextPage } from "next";
 import dynamic from "next/dynamic";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "../../components/common/button";
 import Container from "../../components/common/container";
 import Meta from "../../components/common/meta";
@@ -80,11 +80,11 @@ const GamePage: NextPage<{
       setMessage("Already guessed");
       setTimeout(() => setMessage(undefined), 500);
     }
-
-    if (unguessedCountries.length === 0) {
-      stop();
-    }
   };
+
+  useEffect(() => {
+    if (unguessedCountries.length === 0) stop();
+  }, [unguessedCountries, stop]);
 
   return (
     <>

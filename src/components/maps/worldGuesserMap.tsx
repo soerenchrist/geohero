@@ -24,7 +24,7 @@ const CountryMarker: React.FC<{ country: Country; found: boolean }> = ({
   );
   return (
     <Circle radius={70000} color={found ? "green" : "red"} center={position}>
-      <Tooltip>{country.name}</Tooltip>
+      {found && <Tooltip>{country.name}</Tooltip>}
     </Circle>
   );
 };
