@@ -1,10 +1,9 @@
 import { GetServerSideProps, NextPage } from "next";
 import dynamic from "next/dynamic";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Button } from "../../components/common/button";
 import Container from "../../components/common/container";
 import Meta from "../../components/common/meta";
-import CountrySearchField from "../../components/common/countrySearchField";
 import { useCountdown } from "../../hooks/useGameStats";
 import {
   getChallengeTokenSettings,
@@ -17,20 +16,59 @@ import { formatTime } from "../../utils/timeUtil";
 import GameFinishedScreen from "../../components/world-guesser/gameFinishedScreen";
 import { trpc } from "../../utils/trpc";
 import { useUsername } from "../../hooks/useUsername";
+import CountryNameInput from "../../components/common/countryNameInput";
 
 const Map = dynamic(() => import("../../components/maps/worldGuesserMap"), {
   ssr: false,
 });
+
+const LocalCountrySearch: React.FC<{
+  allCountries: Country[];
+  onCorrect: (country: Country) => void;
+}> = ({ allCountries, onCorrect }) => {
+  const [name, setName] = useState("");
+  const [error, setError] = useState<string>();
+
+  const handleEnter = () => {
+    const result = allCountries.find(
+      (x) => x.name.toLowerCase() === name.toLowerCase()
+    );
+    if (result) {
+      onCorrect(result);
+    } else {
+      setError("Country not found");
+    }
+    setName("");
+  };
+
+  return (
+    <CountryNameInput
+      name={name}
+      onChange={setName}
+      error={error}
+      onEnter={handleEnter}
+    />
+  );
+};
 
 const GamePage: NextPage<{
   settings: WorldGuesserSettings;
   isChallenge: boolean;
   challengeToken?: string;
 }> = ({ settings, isChallenge, challengeToken }) => {
+  const allCountries = useRef<Country[]>([]);
+  const [remainingCountries, setRemainingCountries] = useState<Country[]>([]);
+  const { isLoading, isError } = trpc.useQuery(["game.get-all-countries"], {
+    refetchOnWindowFocus: false,
+    retry: false,
+    onSuccess: (countries) => {
+      if (countries) {
+        allCountries.current = countries;
+        setRemainingCountries(countries);
+      }
+    },
+  });
   const { name } = useUsername();
-  const [unguessedCountries, setUnguessedCountries] = useState(
-    Array.from(Array(198).keys())
-  );
   const [guessedCountries, setGuessedCountries] = useState<Country[]>([]);
 
   const { mutate: saveUserResult } = trpc.useMutation("game.save-user-result");
@@ -49,30 +87,23 @@ const GamePage: NextPage<{
     }
     setGameRunning(false);
   };
-  const { data: allCountries } = trpc.useQuery(["game.get-all-countries"], {
-    refetchOnWindowFocus: false,
-    retry: false,
-    enabled: settings.showMissingCountries,
-  });
 
   const { remainingSeconds, stop } = useCountdown(
     settings.time * 60,
     finishGame
   );
 
-  const remainingCountries = useMemo(
-    () => allCountries?.filter((x) => unguessedCountries.includes(x.index)),
-    [allCountries, unguessedCountries]
-  );
-
   const [gameRunning, setGameRunning] = useState(true);
   const handleGuess = (country: Country) => {
-    // Guess is correct
-    if (unguessedCountries.includes(country.index)) {
+    const found = remainingCountries.find(
+      (x) => x.index == country.index
+    );
+
+    if (found) {
       setGuessedCountries([...guessedCountries, country]);
-      setUnguessedCountries(
-        unguessedCountries.filter((x) => x !== country.index)
-      );
+      setRemainingCountries(remainingCountries.filter(
+        (x) => x.index !== country.index
+      ));
 
       setMessage("Correct!");
       setTimeout(() => setMessage(undefined), 500);
@@ -80,12 +111,21 @@ const GamePage: NextPage<{
       setMessage("Already guessed");
       setTimeout(() => setMessage(undefined), 500);
     }
+
+    if (guessedCountries.length === allCountries.current.length) {
+      stop();
+    }
   };
 
-  useEffect(() => {
-    if (unguessedCountries.length === 0) stop();
-  }, [unguessedCountries, stop]);
+  if (isLoading) {
+    return <Container>Loading...</Container>;
+  }
 
+  console.log(remainingCountries.length);
+
+  if (isError) {
+    return <Container>Something went wrong...</Container>;
+  }
   return (
     <>
       <Meta></Meta>
@@ -121,7 +161,10 @@ const GamePage: NextPage<{
                 )}
               </div>
             </div>
-            <CountrySearchField onCountryInput={handleGuess} />
+            <LocalCountrySearch
+              allCountries={allCountries.current}
+              onCorrect={handleGuess}
+            />
 
             <Button onClick={() => stop()}>Give up</Button>
           </div>

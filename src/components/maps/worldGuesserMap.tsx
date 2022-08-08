@@ -58,11 +58,19 @@ const WorldGuesserMap: React.FC<{
         />
       )}
       {guessedCountries.map((country) => (
-        <CountryMarker key={country.index} found={true} country={country} />
+        <CountryMarker
+          key={`guessed-${country.index}`}
+          found={true}
+          country={country}
+        />
       ))}
       {showMissingCountries &&
         allCountries?.map((country) => (
-          <CountryMarker key={country.index} found={false} country={country} />
+          <CountryMarker
+            key={`unguessed-${country.index}`}
+            found={false}
+            country={country}
+          />
         ))}
     </MapContainer>
   );
