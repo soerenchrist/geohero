@@ -216,13 +216,13 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   }
 
   let showDirections = false;
-  const showDirString = ctx.query.showDirs;
+  const showDirString = ctx.query.showDirections;
   if (showDirString && typeof showDirString === "string") {
     const value = showDirString === "true";
     showDirections = value;
   }
   let showCountryBorders = false;
-  const showBordersString = ctx.query.showBorders;
+  const showBordersString = ctx.query.showCountryBorders;
   if (showBordersString && typeof showBordersString === "string") {
     const value = showBordersString === "true";
     showCountryBorders = value;
