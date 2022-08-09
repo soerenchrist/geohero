@@ -7,7 +7,6 @@ import Checkbox from "../../components/common/checkbox";
 import Container from "../../components/common/container";
 import Meta from "../../components/common/meta";
 import Spinner from "../../components/common/spinner";
-import Title from "../../components/common/title";
 import { useRegisterToken } from "../../hooks/useRegisterToken";
 import { useGameSettings } from "../../hooks/useSettings";
 import { WorldGuesserSettingsSchema } from "../../server/types/settings";
@@ -16,7 +15,7 @@ const StartPage: NextPage = () => {
   const [token, setToken] = useState<string>();
   const { settings, setSettingValue, saveSettings, url, reset } =
     useGameSettings("country-search", WorldGuesserSettingsSchema, {
-      time: 8,
+      time: 10,
       showCountryBorders: true,
       showMissingCountries: false,
     });
@@ -39,8 +38,15 @@ const StartPage: NextPage = () => {
     <>
       <Meta />
       <Container>
-        <div className="h-screen w-full flex justify-center flex-col items-center gap-6">
-          <Title />
+        <div className="h-full w-full flex justify-center flex-col items-center gap-6 pt-20">
+          <h1
+            className={`text-5xl lg:text-8xl mb-10 font-extrabold text-white`}
+          >
+            World
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-accent1 to-accent2">
+              Guesser
+            </span>
+          </h1>
           <Spinner
             label="Time in Minutes"
             value={settings.time}

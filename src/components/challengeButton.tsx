@@ -3,8 +3,6 @@ import { trpc } from "../utils/trpc";
 import { Button } from "./common/button";
 import CopyIcon from "./icons/copy";
 import toast, { Toaster } from "react-hot-toast";
-import { useRouter } from "next/router";
-const baseUrl = "https://geohero.soerenchrist.de/challenge/";
 const ChallengeButton: React.FC<{
   onTokenGenerate: (token: string) => void;
 }> = ({ onTokenGenerate }) => {

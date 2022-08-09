@@ -12,7 +12,7 @@ const Home: NextPage = () => {
     <>
       <Meta />
       <Container>
-        <div className="flex flex-col w-full h-screen justify-start pt-24 lg:pt-0 lg:justify-center gap-8 items-center">
+        <div className="flex flex-col w-full h-full justify-start pt-24 lg:justify-center gap-8 items-center">
           <Title />
           <div className="grid grid-cols-1 lg:grid-cols-2 max-w-lg gap-4">
             <Card

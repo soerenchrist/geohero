@@ -5,9 +5,11 @@ import ChallengeButton from "../../components/challengeButton";
 import { Button } from "../../components/common/button";
 import Checkbox from "../../components/common/checkbox";
 import Container from "../../components/common/container";
+import Footer from "../../components/common/footer";
 import Meta from "../../components/common/meta";
 import Spinner from "../../components/common/spinner";
 import Title from "../../components/common/title";
+import HowToPlay from "../../components/country-search/howToPlay";
 import { useRegisterToken } from "../../hooks/useRegisterToken";
 import { useGameSettings } from "../../hooks/useSettings";
 import { CountrySearchSettingsSchema } from "../../server/types/settings";
@@ -44,8 +46,15 @@ const StartPage: NextPage = () => {
     <>
       <Meta />
       <Container>
-        <div className="h-screen w-full flex justify-center flex-col items-center gap-6">
-          <Title />
+        <div className="h-full w-full flex justify-center flex-col items-center gap-6 pt-20">
+          <h1
+            className={`text-5xl lg:text-8xl mb-10 font-extrabold text-white`}
+          >
+            Country
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-accent1 to-accent2">
+              Search
+            </span>
+          </h1>
           <Spinner
             label="Rounds"
             value={settings.rounds}

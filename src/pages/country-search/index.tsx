@@ -144,7 +144,7 @@ const GamePage: NextPage<{
           elapsedSeconds={elapsedSeconds}
         />
         {!gameWon && (
-          <div className="flex flex-col w-screen min-h-screen items-center gap-8">
+          <div className="flex flex-col w-screen justify-start items-center gap-8">
             <div className="lg:h-96 h-72 w-screen abolute">
               <Map
                 center={currentGuess ?? { latitude: 49, longitude: 10 }}

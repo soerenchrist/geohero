@@ -149,7 +149,7 @@ const GamePage: NextPage<{
           />
         )}
         {gameRunning && (
-          <div className="flex flex-col w-screen min-h-screen items-center gap-8">
+          <div className="flex flex-col w-screen items-center gap-8">
             <div className="h-144 w-screen abolute">
               <Map
                 showCountryBorders={settings.showCountryBorders}
