@@ -53,7 +53,7 @@ const GameFinishedScreen: React.FC<{
             Show Leaderboard
           </Button>
         ) : (
-          <Button onClick={() => router.push("/country-search/start")}>
+          <Button onClick={() => router.push("/world-guesser/start")}>
             Play again
           </Button>
         )}

@@ -15,7 +15,7 @@ const CountryNameInput: React.FC<{
   return (
     <div className="flex">
       <input
-        className={`w-64 px-4 font-medium text-lg text-center h-16 rounded-l-full ${
+        className={`w-72 px-4 font-medium text-lg text-center h-16 rounded-l-full ${
           error
             ? "border-red-500 bg-red-100 placeholder:text-red-600"
             : "placeholder:text-gray-400"

@@ -17,6 +17,7 @@ import GameFinishedScreen from "../../components/world-guesser/gameFinishedScree
 import { trpc } from "../../utils/trpc";
 import { useUsername } from "../../hooks/useUsername";
 import CountryNameInput from "../../components/common/countryNameInput";
+import Loader from "../../components/common/loader";
 
 const Map = dynamic(() => import("../../components/maps/worldGuesserMap"), {
   ssr: false,
@@ -95,15 +96,13 @@ const GamePage: NextPage<{
 
   const [gameRunning, setGameRunning] = useState(true);
   const handleGuess = (country: Country) => {
-    const found = remainingCountries.find(
-      (x) => x.index == country.index
-    );
+    const found = remainingCountries.find((x) => x.index == country.index);
 
     if (found) {
       setGuessedCountries([...guessedCountries, country]);
-      setRemainingCountries(remainingCountries.filter(
-        (x) => x.index !== country.index
-      ));
+      setRemainingCountries(
+        remainingCountries.filter((x) => x.index !== country.index)
+      );
 
       setMessage("Correct!");
       setTimeout(() => setMessage(undefined), 500);
@@ -118,13 +117,23 @@ const GamePage: NextPage<{
   };
 
   if (isLoading) {
-    return <Container>Loading...</Container>;
+    return (
+      <Container>
+        <div className="flex justify-center items-center h-screen w-screen">
+          <Loader color="fill-white" className="!w-12 !h-12" />
+        </div>
+      </Container>
+    );
   }
 
-  console.log(remainingCountries.length);
-
   if (isError) {
-    return <Container>Something went wrong...</Container>;
+    return (
+      <Container>
+        <div className="flex justify-center text-2xl text-white items-center h-screen w-screen">
+          Something went wrong...
+        </div>
+      </Container>
+    );
   }
   return (
     <>
